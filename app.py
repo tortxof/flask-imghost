@@ -97,6 +97,13 @@ def signup():
     else:
         return render_template('signup.html')
 
+@app.route('/images')
+@login_required
+def images():
+    user = User.get(User.username == session['username'])
+    images = Image.select().where(Image.user == user)
+    return render_template('images.html', images=images)
+
 @app.route('/upload')
 @login_required
 def upload():

@@ -1,0 +1,8 @@
+{% extends 'layout.html' %}
+{% block content %}
+  {% for image in images %}
+    <div class="image">
+      {{ image.s3_key }}
+    </div>
+  {% endfor %}
+{% endblock %}
