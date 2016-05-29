@@ -5,6 +5,13 @@
   <title>imghost</title>
 </head>
 <body>
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/images">Images</a></li>
+      <li><a href="/collections">Collections</a></li>
+    </ul>
+  </nav>
   {% if 'username' in session %}
     <p>Logged in as: {{ session.username }}</p>
     <p><a href="/logout">Log Out</a></p>
