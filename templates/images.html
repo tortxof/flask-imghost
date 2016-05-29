@@ -1,8 +1,17 @@
 {% extends 'layout.html' %}
 {% block content %}
-  {% for image in images %}
-    <div class="image">
-      {{ image.s3_key }}
-    </div>
-  {% endfor %}
+  <form action="/images/add-to-collection" method="post">
+    {% for image in images %}
+      <div class="image">
+        <input type="checkbox" name="{{ image.id }}" value="selected">
+        {{ image.s3_key }}
+      </div>
+    {% endfor %}
+    <select name="collection">
+      {% for collection in collections %}
+        <option value="{{ collection.id }}">{{ collection.name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Add to collection</button>
+  </form>
 {% endblock %}

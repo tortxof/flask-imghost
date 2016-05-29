@@ -125,7 +125,30 @@ def collections_new():
 def images():
     user = User.get(User.username == session['username'])
     images = Image.select().where(Image.user == user)
-    return render_template('images.html', images=images)
+    collections = Collection.select().where(Collection.user == user)
+    return render_template('images.html', images=images, collections=collections)
+
+@app.route('/images/add-to-collection', methods=['POST'])
+@login_required
+def images_add_to_collection():
+    user = User.get(User.username == session['username'])
+    collection = Collection.get(
+        (Collection.id == request.form.get('collection')) &
+        (Collection.user == user)
+    )
+    images = [
+        Image.get(
+            (Image.id == k) &
+            (Image.user == user)
+        )
+        for k,v in request.form.to_dict().items() if v == 'selected'
+    ]
+    for image in images:
+        ImageCollection.create(
+            image = image,
+            collection = collection
+        )
+    return redirect(url_for('images'))
 
 @app.route('/upload')
 @login_required
