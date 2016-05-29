@@ -104,7 +104,7 @@ def collections():
     collections = Collection.select().where(Collection.user == user)
     return render_template('collections.html', collections=collections)
 
-@app.route('/collections/new', methods=['POST'])
+@app.route('/collections/create', methods=['POST'])
 @login_required
 def collections_new():
     user = User.get(User.username == session['username'])
