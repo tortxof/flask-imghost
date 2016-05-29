@@ -104,6 +104,22 @@ def collections():
     collections = Collection.select().where(Collection.user == user)
     return render_template('collections.html', collections=collections)
 
+@app.route('/collections/new', methods=['POST'])
+@login_required
+def collections_new():
+    user = User.get(User.username == session['username'])
+    name = request.form.get('name')
+    try:
+        Collection.create(
+            user = user,
+            name = name
+        )
+    except IntegrityError:
+        flash('A collection with that name already exists.')
+        return redirect(url_for('collections'))
+    flash('New collection created.')
+    return redirect(url_for('collections'))
+
 @app.route('/images')
 @login_required
 def images():

@@ -1,5 +1,9 @@
 {% extends 'layout.html' %}
 {% block content %}
+  <form action="/collections/new" method="post">
+    <input type="text" name="name">
+    <button type="submit">New Collection</button>
+  </form>
   {% for collection in collections %}
     <div class="collection">{{ collection.name }}</div>
   {% endfor %}
