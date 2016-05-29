@@ -16,4 +16,5 @@ USER docker
 
 EXPOSE 5000
 
-CMD ["dumb-init", "python3", "app.py"]
+ENTRYPOINT ["dumb-init"]
+CMD ["python3", "app.py"]
