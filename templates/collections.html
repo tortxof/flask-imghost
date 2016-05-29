@@ -1,0 +1,6 @@
+{% extends 'layout.html' %}
+{% block content %}
+  {% for collection in collections %}
+    <div class="collection">{{ collection.name }}</div>
+  {% endfor %}
+{% endblock %}

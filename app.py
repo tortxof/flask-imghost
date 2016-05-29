@@ -97,6 +97,13 @@ def signup():
     else:
         return render_template('signup.html')
 
+@app.route('/collections')
+@login_required
+def collections():
+    user = User.get(User.username == session['username'])
+    collections = Collection.select().where(Collection.user == user)
+    return render_template('collections.html', collections=collections)
+
 @app.route('/images')
 @login_required
 def images():
