@@ -152,6 +152,10 @@ def images_add_to_collection():
                 image = image,
                 collection = collection
             )
+            flash(
+                'Image {0} added to collection {1}'
+                .format(image.s3_key, collection.name)
+            )
         except IntegrityError:
             flash(
                 'Image {0} is already in collection {1}'
