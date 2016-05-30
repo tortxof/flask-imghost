@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 {% block content %}
-  <form action="/images/add-to-collection" method="post">
+  <form action="/images" method="post">
     {% for image in images %}
       <div class="image">
         <input type="checkbox" name="{{ image.id }}" value="selected">
@@ -12,6 +12,7 @@
         <option value="{{ collection.id }}">{{ collection.name }}</option>
       {% endfor %}
     </select>
-    <button type="submit">Add to collection</button>
+    <button type="submit" name="add_to_collection" value="true">Add to collection</button>
+    <button type="submit" name="delete" value="true">Delete images</button>
   </form>
 {% endblock %}

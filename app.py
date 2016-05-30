@@ -49,6 +49,13 @@ def login_required(f):
 def get_current_user():
     return User.get(User.username == session['username'])
 
+def get_s3_client():
+    return boto3.client(
+        's3',
+        aws_access_key_id = app.config['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key = app.config['AWS_SECRET_ACCESS_KEY']
+        )
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -123,45 +130,54 @@ def collections_new():
     flash('New collection created.')
     return redirect(url_for('collections'))
 
-@app.route('/images')
+@app.route('/images', methods=['GET', 'POST'])
 @login_required
 def images():
     user = get_current_user()
-    images = Image.select().where(Image.user == user)
-    collections = Collection.select().where(Collection.user == user)
-    return render_template('images.html', images=images, collections=collections)
+    if request.method == 'POST':
+        images = [
+            Image.get(
+                (Image.id == k) &
+                (Image.user == user)
+            )
+            for k,v in request.form.to_dict().items() if v == 'selected'
+        ]
+        if request.form.get('add_to_collection'):
+            collection = Collection.get(
+                (Collection.id == request.form.get('collection')) &
+                (Collection.user == user)
+            )
+            for image in images:
+                try:
+                    ImageCollection.create(
+                        image = image,
+                        collection = collection
+                    )
+                    flash(
+                        'Image {0} added to collection {1}'
+                        .format(image.s3_key, collection.name)
+                    )
+                except IntegrityError:
+                    flash(
+                        'Image {0} is already in collection {1}'
+                        .format(image.s3_key, collection.name)
+                    )
+            return redirect(url_for('images'))
+        elif request.form.get('delete'):
+            s3 = get_s3_client()
+            for image in images:
+                image.delete_instance(recursive=True)
+                s3.delete_object(
+                    Bucket = image.s3_bucket,
+                    Key = image.s3_key
+                )
+                flash('Image {0} deleted'.format(image.s3_key))
+            return redirect(url_for('images'))
+    else:
+        images = Image.select().where(Image.user == user)
+        collections = Collection.select().where(Collection.user == user)
+        return render_template('images.html', images=images, collections=collections)
 
-@app.route('/images/add-to-collection', methods=['POST'])
-@login_required
-def images_add_to_collection():
-    user = get_current_user()
-    collection = Collection.get(
-        (Collection.id == request.form.get('collection')) &
-        (Collection.user == user)
-    )
-    images = [
-        Image.get(
-            (Image.id == k) &
-            (Image.user == user)
-        )
-        for k,v in request.form.to_dict().items() if v == 'selected'
-    ]
-    for image in images:
-        try:
-            ImageCollection.create(
-                image = image,
-                collection = collection
-            )
-            flash(
-                'Image {0} added to collection {1}'
-                .format(image.s3_key, collection.name)
-            )
-        except IntegrityError:
-            flash(
-                'Image {0} is already in collection {1}'
-                .format(image.s3_key, collection.name)
-            )
-    return redirect(url_for('images'))
 
 @app.route('/upload')
 @login_required
@@ -180,11 +196,7 @@ def upload():
         except IntegrityError:
             flash('Image already exists.')
     key_prefix = base64.urlsafe_b64encode(os.urandom(6)).decode()
-    s3 = boto3.client(
-        's3',
-        aws_access_key_id = app.config['AWS_ACCESS_KEY_ID'],
-        aws_secret_access_key = app.config['AWS_SECRET_ACCESS_KEY']
-        )
+    s3 = get_s3_client()
     post = s3.generate_presigned_post(
         Bucket = app.config['S3_BUCKET'],
         Key = key_prefix + '/${filename}',
