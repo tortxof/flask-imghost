@@ -9,7 +9,7 @@
       {{ collection.name }}
       <ul>
         {% for image in collection.images() %}
-          <li>{{ image.s3_key }}</li>
+          <li><a href="https://s3.amazonaws.com/{{ image.s3_bucket }}/{{ image.s3_key|urlencode() }}" target="_blank">{{ image.s3_key }}</a></li>
         {% endfor %}
       </ul>
     </div>
