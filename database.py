@@ -19,6 +19,13 @@ class Collection(BaseModel):
     user = ForeignKeyField(User)
     name = CharField(unique=True)
 
+    def images(self):
+        return (
+            Image.select()
+            .join(ImageCollection)
+            .where(ImageCollection.collection == self)
+        )
+
 class Image(BaseModel):
     user = ForeignKeyField(User)
     s3_key = CharField(unique=True)

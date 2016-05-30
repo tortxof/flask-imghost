@@ -5,6 +5,13 @@
     <button type="submit">New Collection</button>
   </form>
   {% for collection in collections %}
-    <div class="collection">{{ collection.name }}</div>
+    <div class="collection">
+      {{ collection.name }}
+      <ul>
+        {% for image in collection.images() %}
+          <li>{{ image.s3_key }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   {% endfor %}
 {% endblock %}
