@@ -46,6 +46,9 @@ def login_required(f):
             return redirect(url_for('login'))
     return wrapper
 
+def get_current_user():
+    return User.get(User.username == session['username'])
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -100,14 +103,14 @@ def signup():
 @app.route('/collections')
 @login_required
 def collections():
-    user = User.get(User.username == session['username'])
+    user = get_current_user()
     collections = Collection.select().where(Collection.user == user)
     return render_template('collections.html', collections=collections)
 
 @app.route('/collections/create', methods=['POST'])
 @login_required
 def collections_new():
-    user = User.get(User.username == session['username'])
+    user = get_current_user()
     name = request.form.get('name')
     try:
         Collection.create(
@@ -123,7 +126,7 @@ def collections_new():
 @app.route('/images')
 @login_required
 def images():
-    user = User.get(User.username == session['username'])
+    user = get_current_user()
     images = Image.select().where(Image.user == user)
     collections = Collection.select().where(Collection.user == user)
     return render_template('images.html', images=images, collections=collections)
@@ -131,7 +134,7 @@ def images():
 @app.route('/images/add-to-collection', methods=['POST'])
 @login_required
 def images_add_to_collection():
-    user = User.get(User.username == session['username'])
+    user = get_current_user()
     collection = Collection.get(
         (Collection.id == request.form.get('collection')) &
         (Collection.user == user)
@@ -159,13 +162,14 @@ def images_add_to_collection():
 @app.route('/upload')
 @login_required
 def upload():
+    user = get_current_user()
     args = request.args.to_dict()
     if args:
         try:
             image = Image.create(
                 s3_key = args['key'],
                 s3_bucket = args['bucket'],
-                user = User.get(User.username == session['username']),
+                user = user,
                 date_created = datetime.datetime.utcnow()
             )
             flash('Image {0} added.'.format(args['key']))
