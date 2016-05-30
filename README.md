@@ -26,17 +26,16 @@ Example: `/api/c/my_collection`
 }
 ```
 
-#### `/api/i/<image>`
+#### `/api/i/<s3_key>`
 
 Returns a JSON object with a single image.
 
-Example: `/api/i/my_image`
+Example: `/api/i/01V9PaTx/my_image.jpg`
 
 ```json
 {
-  "name": "my_image",
-  "url": "https://",
-  "type": "image/jpeg",
+  "url": "https://s3.amazonaws.com/my_bucket/01V9PaTx/my_image.jpg",
+  "s3_key": "01V9PaTx/my_image.jpg",
   "title": "Image Title",
   "description": "A description of the image."
 }
