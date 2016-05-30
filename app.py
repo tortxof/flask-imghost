@@ -144,10 +144,16 @@ def images_add_to_collection():
         for k,v in request.form.to_dict().items() if v == 'selected'
     ]
     for image in images:
-        ImageCollection.create(
-            image = image,
-            collection = collection
-        )
+        try:
+            ImageCollection.create(
+                image = image,
+                collection = collection
+            )
+        except IntegrityError:
+            flash(
+                'Image {0} is already in collection {1}'
+                .format(image.s3_key, collection.name)
+            )
     return redirect(url_for('images'))
 
 @app.route('/upload')
@@ -162,7 +168,7 @@ def upload():
                 user = User.get(User.username == session['username']),
                 date_created = datetime.datetime.utcnow()
             )
-            flash('Image added.')
+            flash('Image {0} added.'.format(args['key']))
         except IntegrityError:
             flash('Image already exists.')
     key_prefix = base64.urlsafe_b64encode(os.urandom(6)).decode()
