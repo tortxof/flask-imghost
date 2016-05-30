@@ -3,7 +3,7 @@ import base64
 import datetime
 from functools import wraps
 
-from flask import Flask, render_template, request, flash, g, session, redirect, url_for
+from flask import Flask, render_template, request, flash, g, session, redirect, url_for, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
 
@@ -197,6 +197,32 @@ def upload():
         ExpiresIn = 600
         )
     return render_template('upload.html', post=post, args=args)
+
+@app.route('/api/c/<collection_name>')
+def get_json_collection(collection_name):
+    collection = Collection.get(Collection.name == collection_name)
+    return jsonify(
+        name = collection.name,
+        images = [
+            {
+                'title': image.title,
+                'description': image.description,
+                's3_key': image.s3_key,
+                'url': 'https://s3.amazonaws.com/{0}/{1}'.format(image.s3_bucket, image.s3_key)
+            }
+            for image in collection.images()
+        ]
+    ), 200, {'Access-Control-Allow-Origin': '*'}
+
+@app.route('/api/i/<path:s3_key>')
+def get_json_image(s3_key):
+    image = Image.get(Image.s3_key == s3_key)
+    return jsonify(
+        title = image.title,
+        description = image.description,
+        s3_key = image.s3_key,
+        url = 'https://s3.amazonaws.com/{0}/{1}'.format(image.s3_bucket, image.s3_key)
+    ), 200, {'Access-Control-Allow-Origin': '*'}
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
