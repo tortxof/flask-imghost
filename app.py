@@ -114,9 +114,25 @@ def collections():
     collections = Collection.select().where(Collection.user == user)
     return render_template('collections.html', collections=collections)
 
+@app.route('/collections/delete', methods=['POST'])
+def collections_delete():
+    user = get_current_user()
+    if request.form.get('delete'):
+        collections = [
+            Collection.get(
+                (Collection.name == k) &
+                (Collection.user == user)
+            )
+            for k, v in request.form.to_dict().items() if v == 'selected'
+        ]
+        for collection in collections:
+            collection.delete_instance(recursive=True)
+            flash('Collection {0} deleted'.format(collection.name))
+    return redirect(url_for('collections'))
+
 @app.route('/collections/create', methods=['POST'])
 @login_required
-def collections_new():
+def collections_create():
     user = get_current_user()
     name = request.form.get('name')
     try:
@@ -140,7 +156,7 @@ def images():
                 (Image.id == k) &
                 (Image.user == user)
             )
-            for k,v in request.form.to_dict().items() if v == 'selected'
+            for k, v in request.form.to_dict().items() if v == 'selected'
         ]
         if request.form.get('add_to_collection'):
             collection = Collection.get(

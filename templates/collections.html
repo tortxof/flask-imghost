@@ -4,14 +4,18 @@
     <input type="text" name="name">
     <button type="submit">New Collection</button>
   </form>
-  {% for collection in collections %}
-    <div class="collection">
-      {{ collection.name }}
-      <ul>
-        {% for image in collection.images() %}
-          <li><a href="https://s3.amazonaws.com/{{ image.s3_bucket }}/{{ image.s3_key|urlencode() }}" target="_blank">{{ image.s3_key }}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endfor %}
+  <form action="/collections/delete" method="post">
+    {% for collection in collections %}
+      <div class="collection">
+        <input type="checkbox" name="{{ collection.name }}" value="selected">
+        {{ collection.name }}
+        <ul>
+          {% for image in collection.images() %}
+            <li><a href="https://s3.amazonaws.com/{{ image.s3_bucket }}/{{ image.s3_key|urlencode() }}" target="_blank">{{ image.s3_key }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+    <button type="submit" name="delete" value="true">Delete collections</button>
+  </form>
 {% endblock %}
