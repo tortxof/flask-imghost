@@ -37,3 +37,8 @@ class Image(BaseModel):
 class ImageCollection(BaseModel):
     image = ForeignKeyField(Image)
     collection = ForeignKeyField(Collection)
+
+    class Meta:
+        indexes = (
+            (('image', 'collection'), True),
+        )
