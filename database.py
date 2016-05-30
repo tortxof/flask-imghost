@@ -34,6 +34,9 @@ class Image(BaseModel):
     description = TextField(default='')
     date_created = DateTimeField()
 
+    class Meta:
+        order_by = ('-date_created',)
+
 class ImageCollection(BaseModel):
     image = ForeignKeyField(Image)
     collection = ForeignKeyField(Collection)
