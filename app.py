@@ -192,7 +192,7 @@ def images():
     if request.method == 'POST':
         images = [
             Image.get(
-                (Image.id == k) &
+                (Image.s3_key == k) &
                 (Image.user == user)
             )
             for k, v in request.form.to_dict().items() if v == 'selected'
@@ -230,6 +230,7 @@ def images():
             return redirect(url_for('images'))
     else:
         images = Image.select().where(Image.user == user)
+        images = [gen_image_dict(image) for image in images]
         collections = Collection.select().where(Collection.user == user)
         return render_template('images.html', images=images, collections=collections)
 

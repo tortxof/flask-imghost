@@ -3,8 +3,8 @@
   <form action="/images" method="post">
     {% for image in images %}
       <div class="image">
-        <input type="checkbox" name="{{ image.id }}" value="selected">
-        <a href="https://s3.amazonaws.com/{{ image.s3_bucket }}/{{ image.s3_key|urlencode() }}" target="_blank">{{ image.s3_key }}</a>
+        <input type="checkbox" name="{{ image.s3_key }}" value="selected">
+        <a href="{{ image.url }}" target="_blank"><img src="{{ image.thumbs.128 }}" alt="{{ image.title }}">{{ image.s3_key }}</a>
       </div>
     {% endfor %}
     <div class="add_to_collection">
