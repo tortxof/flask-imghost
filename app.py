@@ -269,18 +269,25 @@ def upload():
         )
     return render_template('upload.html', post=post, args=args)
 
+def gen_image_dict(image):
+    return {
+        'title': image.title,
+        'description': image.description,
+        's3_key': image.s3_key,
+        'url': 'https://s3.amazonaws.com/{0}/{1}'.format(image.s3_bucket, image.s3_key),
+        'thumbs': {
+            size: 'https://s3.amazonaws.com/{0}/{1}'.format(image.s3_bucket, gen_thumb_key(image.s3_key, size))
+            for size in (128, 256, 512)
+        }
+    }
+
 @app.route('/api/c/<collection_name>')
 def get_json_collection(collection_name):
     collection = Collection.get(Collection.name == collection_name)
     return jsonify(
         name = collection.name,
         images = [
-            {
-                'title': image.title,
-                'description': image.description,
-                's3_key': image.s3_key,
-                'url': 'https://s3.amazonaws.com/{0}/{1}'.format(image.s3_bucket, image.s3_key)
-            }
+            gen_image_dict(image)
             for image in collection.images()
         ]
     ), 200, {'Access-Control-Allow-Origin': '*'}
@@ -289,10 +296,7 @@ def get_json_collection(collection_name):
 def get_json_image(s3_key):
     image = Image.get(Image.s3_key == s3_key)
     return jsonify(
-        title = image.title,
-        description = image.description,
-        s3_key = image.s3_key,
-        url = 'https://s3.amazonaws.com/{0}/{1}'.format(image.s3_bucket, image.s3_key)
+        gen_image_dict(image)
     ), 200, {'Access-Control-Allow-Origin': '*'}
 
 if __name__ == '__main__':
