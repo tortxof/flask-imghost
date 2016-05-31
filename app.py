@@ -2,10 +2,13 @@ import os
 import base64
 import datetime
 from functools import wraps
+import tempfile
+import hashlib
 
 from flask import Flask, render_template, request, flash, g, session, redirect, url_for, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
+from PIL import Image as PImage
 
 from database import database, User, Collection, Image, ImageCollection, IntegrityError
 
@@ -54,6 +57,42 @@ def get_s3_client():
         's3',
         aws_access_key_id = app.config['AWS_ACCESS_KEY_ID'],
         aws_secret_access_key = app.config['AWS_SECRET_ACCESS_KEY']
+        )
+
+def gen_thumb_key(key, size):
+    key = key.split('/')
+    if len(key[-1].split('.')) > 1:
+        filename = key[-1].split('.')
+        filename[-1] = 'jpg'
+        key[-1] = '.'.join(filename)
+    else:
+        key[-1] = '.'.join((key[-1], 'jpg'))
+    size = 't{0}'.format(size)
+    key.insert(1, size)
+    return '/'.join(key)
+
+def create_thumbnails(image):
+    for size in [128, 256, 512]:
+        s3 = get_s3_client()
+        s3_object = s3.get_object(
+            Bucket = image.s3_bucket,
+            Key = image.s3_key
+        )
+        pil_object = PImage.open(s3_object['Body'])
+        pil_object.thumbnail((size, size))
+        thumb_file = tempfile.SpooledTemporaryFile()
+        pil_object.save(thumb_file, format='JPEG')
+        thumb_file.seek(0)
+        thumb_md5 = base64.b64encode(hashlib.md5(thumb_file.read()).digest()).decode()
+        thumb_file.seek(0)
+        thumb_s3_key = gen_thumb_key(image.s3_key, size)
+        s3.put_object(
+            Bucket = image.s3_bucket,
+            Key = thumb_s3_key,
+            ACL = 'public-read',
+            ContentMD5 = thumb_md5,
+            ContentType = 'image/jpeg',
+            Body = thumb_file.read(),
         )
 
 @app.route('/')
@@ -194,7 +233,6 @@ def images():
         collections = Collection.select().where(Collection.user == user)
         return render_template('images.html', images=images, collections=collections)
 
-
 @app.route('/upload')
 @login_required
 def upload():
@@ -211,6 +249,7 @@ def upload():
             flash('Image {0} added.'.format(args['key']))
         except IntegrityError:
             flash('Image already exists.')
+        create_thumbnails(image)
     key_prefix = base64.urlsafe_b64encode(os.urandom(6)).decode()
     s3 = get_s3_client()
     post = s3.generate_presigned_post(
