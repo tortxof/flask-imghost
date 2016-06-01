@@ -4,7 +4,10 @@
     {% for image in images %}
       <div class="image">
         <input type="checkbox" name="{{ image.s3_key }}" value="selected">
-        <a href="{{ image.url }}" target="_blank"><img src="{{ image.thumbs.128 }}" alt="{{ image.title }}">{{ image.s3_key }}</a>
+        <a href="{{ image.s3_key|gen_s3_url(image.s3_bucket) }}" target="_blank">
+          <img src="{{ image.s3_key|gen_thumb_key|gen_s3_url(image.s3_bucket) }}" alt="{{ image.title }}">
+          {{ image.s3_key }}
+        </a>
       </div>
     {% endfor %}
     <div class="add_to_collection">

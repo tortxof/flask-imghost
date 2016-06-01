@@ -4,6 +4,7 @@ import datetime
 from functools import wraps
 import tempfile
 import hashlib
+from urllib.parse import quote_plus
 
 from flask import (
     Flask, render_template, request, flash, g, session, redirect,
@@ -76,6 +77,13 @@ def gen_thumb_key(key, size=128):
     size = 't{0}'.format(size)
     key.insert(1, size)
     return '/'.join(key)
+
+@app.template_filter('gen_s3_url')
+def gen_s3_url(key, bucket):
+    return 'https://s3.amazonaws.com/{0}/{1}'.format(
+        bucket,
+        quote_plus(key, safe='/')
+    )
 
 def create_thumbnails(image):
     for size in [128, 256, 512]:
@@ -238,7 +246,6 @@ def images():
             return redirect(url_for('images'))
     else:
         images = Image.select().where(Image.user == user)
-        images = [gen_image_dict(image) for image in images]
         collections = Collection.select().where(Collection.user == user)
         return render_template(
             'images.html', images=images, collections=collections
@@ -287,12 +294,11 @@ def gen_image_dict(image):
         'title': image.title,
         'description': image.description,
         's3_key': image.s3_key,
-        'url': 'https://s3.amazonaws.com/{0}/{1}'.format(
-            image.s3_bucket, image.s3_key
-        ),
+        'url': gen_s3_url(image.s3_key, image.s3_bucket),
         'thumbs': {
-            size: 'https://s3.amazonaws.com/{0}/{1}'.format(
-                image.s3_bucket, gen_thumb_key(image.s3_key, size=size)
+            size: gen_s3_url(
+                gen_thumb_key(image.s3_key, size=size),
+                image.s3_bucket
             )
             for size in (128, 256, 512)
         }
