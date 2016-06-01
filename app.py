@@ -55,6 +55,8 @@ def login_required(f):
             return redirect(url_for('login'))
     return wrapper
 
+THUMB_SIZES = (64, 128, 256, 512)
+
 def get_current_user():
     return User.get(User.username == session['username'])
 
@@ -86,7 +88,7 @@ def gen_s3_url(key, bucket):
     )
 
 def create_thumbnails(image):
-    for size in [128, 256, 512]:
+    for size in THUMB_SIZES:
         s3 = get_s3_client()
         s3_object = s3.get_object(
             Bucket = image.s3_bucket,
@@ -242,7 +244,7 @@ def images():
                     Bucket = image.s3_bucket,
                     Key = image.s3_key
                 )
-                for size in (128, 256, 512):
+                for size in THUMB_SIZES:
                     s3.delete_object(
                         Bucket = image.s3_bucket,
                         Key = gen_thumb_key(image.s3_key, size=size)
@@ -305,7 +307,7 @@ def gen_image_dict(image):
                 gen_thumb_key(image.s3_key, size=size),
                 image.s3_bucket
             )
-            for size in (128, 256, 512)
+            for size in THUMB_SIZES
         }
     }
 
