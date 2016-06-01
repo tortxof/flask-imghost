@@ -5,12 +5,17 @@ from functools import wraps
 import tempfile
 import hashlib
 
-from flask import Flask, render_template, request, flash, g, session, redirect, url_for, jsonify
+from flask import (
+    Flask, render_template, request, flash, g, session, redirect,
+    url_for, jsonify
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
 from PIL import Image as PImage
 
-from database import database, User, Collection, Image, ImageCollection, IntegrityError
+from database import (
+    database, User, Collection, Image, ImageCollection, IntegrityError
+)
 
 database.connect()
 database.create_tables([User, Collection, Image, ImageCollection], safe=True)
@@ -83,7 +88,9 @@ def create_thumbnails(image):
         thumb_file = tempfile.SpooledTemporaryFile()
         pil_object.save(thumb_file, format='JPEG')
         thumb_file.seek(0)
-        thumb_md5 = base64.b64encode(hashlib.md5(thumb_file.read()).digest()).decode()
+        thumb_md5 = base64.b64encode(
+            hashlib.md5(thumb_file.read()).digest()
+        ).decode()
         thumb_file.seek(0)
         thumb_s3_key = gen_thumb_key(image.s3_key, size)
         s3.put_object(
@@ -232,7 +239,9 @@ def images():
         images = Image.select().where(Image.user == user)
         images = [gen_image_dict(image) for image in images]
         collections = Collection.select().where(Collection.user == user)
-        return render_template('images.html', images=images, collections=collections)
+        return render_template(
+            'images.html', images=images, collections=collections
+        )
 
 @app.route('/upload')
 @login_required
@@ -258,26 +267,32 @@ def upload():
         Key = key_prefix + '/${filename}',
         Fields = {
             'acl': 'public-read',
-            'success_action_redirect': '{0}/upload'.format(app.config['APP_URL'])
-            },
+            'success_action_redirect': '{0}/upload'.format(
+                app.config['APP_URL']
+            )
+        },
         Conditions = [
             {'acl': 'public-read'},
             ['starts-with', '$key', key_prefix],
             ['starts-with', '$success_action_redirect', app.config['APP_URL']],
             ['starts-with', '$Content-Type', 'image/'],
-            ],
+        ],
         ExpiresIn = 600
-        )
-    return render_template('upload.html', post=post, args=args)
+    )
+    return render_template('upload.html', post=post)
 
 def gen_image_dict(image):
     return {
         'title': image.title,
         'description': image.description,
         's3_key': image.s3_key,
-        'url': 'https://s3.amazonaws.com/{0}/{1}'.format(image.s3_bucket, image.s3_key),
+        'url': 'https://s3.amazonaws.com/{0}/{1}'.format(
+            image.s3_bucket, image.s3_key
+        ),
         'thumbs': {
-            size: 'https://s3.amazonaws.com/{0}/{1}'.format(image.s3_bucket, gen_thumb_key(image.s3_key, size))
+            size: 'https://s3.amazonaws.com/{0}/{1}'.format(
+                image.s3_bucket, gen_thumb_key(image.s3_key, size)
+            )
             for size in (128, 256, 512)
         }
     }
