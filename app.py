@@ -64,7 +64,8 @@ def get_s3_client():
         aws_secret_access_key = app.config['AWS_SECRET_ACCESS_KEY']
         )
 
-def gen_thumb_key(key, size):
+@app.template_filter('gen_thumb_key')
+def gen_thumb_key(key, size=128):
     key = key.split('/')
     if len(key[-1].split('.')) > 1:
         filename = key[-1].split('.')
@@ -92,7 +93,7 @@ def create_thumbnails(image):
             hashlib.md5(thumb_file.read()).digest()
         ).decode()
         thumb_file.seek(0)
-        thumb_s3_key = gen_thumb_key(image.s3_key, size)
+        thumb_s3_key = gen_thumb_key(image.s3_key, size=size)
         s3.put_object(
             Bucket = image.s3_bucket,
             Key = thumb_s3_key,
@@ -291,7 +292,7 @@ def gen_image_dict(image):
         ),
         'thumbs': {
             size: 'https://s3.amazonaws.com/{0}/{1}'.format(
-                image.s3_bucket, gen_thumb_key(image.s3_key, size)
+                image.s3_bucket, gen_thumb_key(image.s3_key, size=size)
             )
             for size in (128, 256, 512)
         }
