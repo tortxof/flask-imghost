@@ -12,8 +12,10 @@
         <ul>
           {% for image in collection.images() %}
             <li>
-              <img src="{{ image.s3_key|gen_thumb_key|gen_s3_url(image.s3_bucket) }}" alt="{{ image.s3_key }}">
-              <a href="{{ image.s3_key|gen_s3_url(image.s3_bucket) }}" target="_blank">{{ image.s3_key }}</a>
+              <a href="{{ image.s3_key|gen_s3_url(image.s3_bucket) }}" target="_blank">
+                <img src="{{ image.s3_key|gen_thumb_key|gen_s3_url(image.s3_bucket) }}" alt="{{ image.s3_key }}">
+                {{ image.s3_key }}
+              </a>
             </li>
           {% endfor %}
         </ul>
