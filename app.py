@@ -242,6 +242,11 @@ def images():
                     Bucket = image.s3_bucket,
                     Key = image.s3_key
                 )
+                for size in (128, 256, 512):
+                    s3.delete_object(
+                        Bucket = image.s3_bucket,
+                        Key = gen_thumb_key(image.s3_key, size=size)
+                    )
                 flash('Image {0} deleted'.format(image.s3_key))
             return redirect(url_for('images'))
     else:
