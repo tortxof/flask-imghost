@@ -68,7 +68,7 @@ def get_s3_client():
         )
 
 @app.template_filter('gen_thumb_key')
-def gen_thumb_key(key, size=128):
+def gen_thumb_key(key, size=THUMB_SIZES[0]):
     key = key.split('/')
     if len(key[-1].split('.')) > 1:
         filename = key[-1].split('.')
@@ -97,7 +97,7 @@ def create_thumbnails(image):
         pil_object = PImage.open(s3_object['Body'])
         pil_object.thumbnail((size, size))
         thumb_file = tempfile.SpooledTemporaryFile()
-        pil_object.save(thumb_file, format='JPEG')
+        pil_object.save(thumb_file, format='JPEG', quality=60, optimize=True)
         thumb_file.seek(0)
         thumb_md5 = base64.b64encode(
             hashlib.md5(thumb_file.read()).digest()
