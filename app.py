@@ -67,6 +67,21 @@ def get_s3_client():
         aws_secret_access_key = app.config['AWS_SECRET_ACCESS_KEY']
         )
 
+def gen_image_dict(image):
+    return {
+        'title': image.title,
+        'description': image.description,
+        's3_key': image.s3_key,
+        'url': gen_s3_url(image.s3_key, image.s3_bucket),
+        'thumbs': {
+            size: gen_s3_url(
+                gen_thumb_key(image.s3_key, size=size),
+                image.s3_bucket
+            )
+            for size in THUMB_SIZES
+        }
+    }
+
 @app.template_filter('gen_thumb_key')
 def gen_thumb_key(key, size=THUMB_SIZES[0]):
     key = key.split('/')
@@ -295,21 +310,6 @@ def upload():
         ExpiresIn = 600
     )
     return render_template('upload.html', post=post)
-
-def gen_image_dict(image):
-    return {
-        'title': image.title,
-        'description': image.description,
-        's3_key': image.s3_key,
-        'url': gen_s3_url(image.s3_key, image.s3_bucket),
-        'thumbs': {
-            size: gen_s3_url(
-                gen_thumb_key(image.s3_key, size=size),
-                image.s3_bucket
-            )
-            for size in THUMB_SIZES
-        }
-    }
 
 @app.route('/api/c/<collection_name>')
 def get_json_collection(collection_name):
