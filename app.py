@@ -143,6 +143,7 @@ def login():
             return render_template('login.html')
         if check_password_hash(user.password, request.form['password']):
             session['username'] = user.username
+            session.permanent = True
             flash('You are now logged in.')
             return redirect(url_for('index'))
         else:
