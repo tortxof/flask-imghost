@@ -45,3 +45,9 @@ class ImageCollection(BaseModel):
         indexes = (
             (('image', 'collection'), True),
         )
+
+class ApiKey(BaseModel):
+    key = CharField(unique=True)
+    user = ForeignKeyField(User)
+    description = CharField(default='')
+    date_created = DateTimeField()

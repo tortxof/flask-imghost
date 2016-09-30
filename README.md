@@ -10,7 +10,7 @@ namespace.
 
 ### Public Endpoints
 
-#### `/api/c/<collection name>`
+#### `/api/c/{collection_name}`
 
 Returns a JSON object with the name of the collection and a list of images in
 the collection.
@@ -28,7 +28,7 @@ Example: `/api/c/my_collection`
 }
 ```
 
-#### `/api/i/<s3 key>`
+#### `/api/i/{s3_key}`
 
 Returns a JSON object with a single image.
 
@@ -54,11 +54,33 @@ Example: `/api/i/01V9PaTx/my_image.jpg`
 
 ### Private Endpoints
 
-#### `GET /api/collection/<collection name>`
+All private endpoints require an API key or username and password sent using
+HTTP basic auth. When using an API key, send any string as the username, and the
+key as the password.
 
-Same as `/api/c/<collection name>`.
+#### `GET /api/api-keys`
 
-#### `POST /api/collection/<collection name>`
+Returns a list of API keys.
+
+#### `GET /api/api-keys/{api-key}`
+
+Get a specific API key.
+
+#### `POST /api/api-keys`
+
+Create a new API key.
+
+Parameters:
+
+description (optional)
+: A text description of the key. Use to indicate where this key is used.
+Defaults to an empty string.
+
+#### `GET /api/collection/{collection_name}`
+
+Same as `/api/c/{collection_name}`.
+
+#### `POST /api/collection/{collection_name}`
 
 Creates a new collection.
 

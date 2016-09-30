@@ -10,19 +10,26 @@ from flask import (
     Flask, render_template, request, flash, g, session, redirect,
     url_for, jsonify
 )
+from flask_httpauth import HTTPBasicAuth
+from flask_restful import Resource, Api, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
 from PIL import Image as PImage
 
 from database import (
-    database, User, Collection, Image, ImageCollection, IntegrityError
+    database, User, Collection, Image, ImageCollection, ApiKey, IntegrityError
 )
 
 database.connect()
-database.create_tables([User, Collection, Image, ImageCollection], safe=True)
+database.create_tables(
+    [User, Collection, Image, ImageCollection, ApiKey],
+    safe=True
+)
 database.close()
 
 app = Flask(__name__)
+api = Api(app)
+auth = HTTPBasicAuth()
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 
@@ -34,6 +41,25 @@ app.config['S3_BUCKET'] = os.environ.get('S3_BUCKET')
 
 app.config['AWS_ACCESS_KEY_ID'] = os.environ.get('AWS_ACCESS_KEY_ID')
 app.config['AWS_SECRET_ACCESS_KEY'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+@auth.verify_password
+def verify_password(username, password):
+    try:
+        api_key = ApiKey.get(ApiKey.key == password)
+    except ApiKey.DoesNotExist:
+        pass
+    else:
+        if api_key:
+            g.user = api_key.user
+            return True
+    try:
+        user = User.get(User.username == username)
+    except User.DoesNotExist:
+        return False
+    if check_password_hash(user.password, password):
+        g.user = user
+        return True
+    return False
 
 @app.before_request
 def before_request():
@@ -329,6 +355,55 @@ def get_json_image(s3_key):
     return jsonify(
         gen_image_dict(image)
     ), 200, {'Access-Control-Allow-Origin': '*'}
+
+class RestApiKeyList(Resource):
+    @auth.login_required
+    def get(self):
+        api_keys = ApiKey.select().where(ApiKey.user == g.user)
+        return [
+            {
+                'key': api_key.key,
+                'user': api_key.user.username,
+                'description': api_key.description,
+                'date_created': api_key.date_created.isoformat(),
+            } for api_key in api_keys
+        ]
+
+    @auth.login_required
+    def post(self):
+        api_key = ApiKey.create(
+            key = base64.urlsafe_b64encode(os.urandom(24)).decode(),
+            user = g.user,
+            description = request.get_json().get('description') if request.is_json else '',
+            date_created = datetime.datetime.utcnow(),
+        )
+        return {
+            'key': api_key.key,
+            'user': api_key.user.username,
+            'description': api_key.description,
+            'date_created': api_key.date_created.isoformat(),
+        }
+
+class RestApiKey(Resource):
+    @auth.login_required
+    def get(self, api_key_str):
+        try:
+            api_key = ApiKey.get(ApiKey.key == api_key_str)
+        except ApiKey.DoesNotExist:
+            abort(
+                404,
+                message = 'API key {0} does not exist.'.format(api_key_str)
+            )
+        else:
+            return {
+                'key': api_key.key,
+                'user': api_key.user.username,
+                'description': api_key.description,
+                'date_created': api_key.date_created.isoformat(),
+            }
+
+api.add_resource(RestApiKeyList, '/api/api-keys')
+api.add_resource(RestApiKey, '/api/api-keys/<api_key_str>')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
