@@ -371,10 +371,14 @@ class RestApiKeyList(Resource):
 
     @auth.login_required
     def post(self):
+        if request.is_json:
+            description = request.get_json().get('description', '')
+        else:
+            description = ''
         api_key = ApiKey.create(
             key = base64.urlsafe_b64encode(os.urandom(24)).decode(),
             user = g.user,
-            description = request.get_json().get('description') if request.is_json else '',
+            description = description,
             date_created = datetime.datetime.utcnow(),
         )
         return {
@@ -388,7 +392,10 @@ class RestApiKey(Resource):
     @auth.login_required
     def get(self, api_key_str):
         try:
-            api_key = ApiKey.get(ApiKey.key == api_key_str)
+            api_key = ApiKey.get(
+                ApiKey.key == api_key_str,
+                ApiKey.user == g.user,
+            )
         except ApiKey.DoesNotExist:
             abort(
                 404,
@@ -412,24 +419,27 @@ class RestCollectionList(Resource):
     def post(self):
         if request.is_json:
             name = request.get_json().get('name')
-        if name:
-            try:
-                collection = Collection.create(
-                    name = name,
-                    user = g.user,
-                )
-            except IntegrityError:
-                abort(
-                    409,
-                    message = 'A collection named {0} already exists.'.format(name)
-                )
-            else:
-                return collection.plain_dict()
         else:
+            abort(
+                400,
+                message = 'Request must be of type application/json.',
+            )
+        if not name:
             abort(
                 400,
                 message = 'Bad collection name.',
             )
+        try:
+            collection = Collection.create(
+                name = name,
+                user = g.user,
+            )
+        except IntegrityError:
+            abort(
+                409,
+                message = 'A collection named {0} already exists.'.format(name)
+            )
+        return collection.plain_dict()
 
 class RestCollection(Resource):
     @auth.login_required
@@ -437,14 +447,13 @@ class RestCollection(Resource):
         try:
             collection = Collection.get(
                 Collection.name == name,
+                Collection.user == g.user,
             )
         except Collection.DoesNotExist:
             abort(
                 404,
                 message = 'A collection named {0} does not exist.'.format(name)
             )
-        if collection.user != g.user:
-            abort(403)
         return collection.plain_dict()
 
 class RestImageList(Resource):
@@ -484,8 +493,7 @@ class RestImageList(Resource):
                 409,
                 message = 'Integrity Error.',
             )
-        else:
-            return image.plain_dict()
+        return image.plain_dict()
 
 class RestImage(Resource):
     @auth.login_required
