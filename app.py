@@ -406,12 +406,7 @@ class RestCollectionList(Resource):
     @auth.login_required
     def get(self):
         collections = Collection.select().where(Collection.user == g.user)
-        return [
-            {
-                'name': collection.name,
-                'user': collection.user.username,
-            } for collection in collections
-        ]
+        return [collection.plain_dict_short() for collection in collections]
 
     @auth.login_required
     def post(self):
@@ -429,10 +424,7 @@ class RestCollectionList(Resource):
                     message = 'A collection named {0} already exists.'.format(name)
                 )
             else:
-                return {
-                    'name': collection.name,
-                    'user': collection.user.username,
-                }
+                return collection.plain_dict()
         else:
             abort(
                 400,
@@ -453,35 +445,13 @@ class RestCollection(Resource):
             )
         if collection.user != g.user:
             abort(403)
-        return {
-            'name': collection.name,
-            'user': collection.user.username,
-            'images': [
-                {
-                    'user': image.user.username,
-                    's3_key': image.s3_key,
-                    's3_bucket': image.s3_bucket,
-                    'title': image.title,
-                    'description': image.description,
-                    'date_created': image.date_created.isoformat(),
-                } for image in collection.images()
-            ],
-        }
+        return collection.plain_dict()
 
 class RestImageList(Resource):
     @auth.login_required
     def get(self):
         images = Image.select().where(Image.user == g.user)
-        return [
-            {
-                'user': image.user.username,
-                's3_key': image.s3_key,
-                's3_bucket': image.s3_bucket,
-                'title': image.title,
-                'description': image.description,
-                'date_created': image.date_created.isoformat(),
-            } for image in images
-        ]
+        return [image.plain_dict() for image in images]
 
     @auth.login_required
     def post(self):
@@ -515,14 +485,7 @@ class RestImageList(Resource):
                 message = 'Integrity Error.',
             )
         else:
-            return {
-                'user': image.user.username,
-                's3_key': image.s3_key,
-                's3_bucket': image.s3_bucket,
-                'title': image.title,
-                'description': image.description,
-                'date_created': image.date_created.isoformat(),
-            }
+            return image.plain_dict()
 
 class RestImage(Resource):
     @auth.login_required
@@ -537,14 +500,7 @@ class RestImage(Resource):
                 404,
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
             )
-        return {
-            'user': image.user.username,
-            's3_key': image.s3_key,
-            's3_bucket': image.s3_bucket,
-            'title': image.title,
-            'description': image.description,
-            'date_created': image.date_created.isoformat(),
-        }
+        return image.plain_dict()
 
     @auth.login_required
     def put(self, s3_key):
@@ -569,14 +525,7 @@ class RestImage(Resource):
         image.description = description
         image.title = title
         image.save()
-        return {
-            'user': image.user.username,
-            's3_key': image.s3_key,
-            's3_bucket': image.s3_bucket,
-            'title': image.title,
-            'description': image.description,
-            'date_created': image.date_created.isoformat(),
-        }
+        return image.plain_dict()
 
     @auth.login_required
     def delete(self, s3_key):
@@ -591,14 +540,7 @@ class RestImage(Resource):
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
             )
         image.delete_instance(recursive=True)
-        return {
-            'user': image.user.username,
-            's3_key': image.s3_key,
-            's3_bucket': image.s3_bucket,
-            'title': image.title,
-            'description': image.description,
-            'date_created': image.date_created.isoformat(),
-        }
+        return image.plain_dict()
 
 api.add_resource(RestApiKeyList, '/api/api-keys')
 api.add_resource(RestApiKey, '/api/api-keys/<api_key_str>')
