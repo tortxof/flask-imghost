@@ -490,6 +490,11 @@ class RestImageList(Resource):
             s3_bucket = request.get_json().get('s3_bucket')
             title = request.get_json().get('title', '')
             description = request.get_json().get('description', '')
+        else:
+            abort(
+                400,
+                message = 'Request must be of type application/json.'
+            )
         if not (s3_key and s3_bucket):
             abort(
                 400,
