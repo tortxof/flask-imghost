@@ -468,9 +468,107 @@ class RestCollection(Resource):
             ],
         }
 
+class RestImageList(Resource):
+    @auth.login_required
+    def get(self):
+        images = Image.select().where(Image.user == g.user)
+        return [
+            {
+                'user': image.user.username,
+                's3_key': image.s3_key,
+                's3_bucket': image.s3_bucket,
+                'title': image.title,
+                'description': image.description,
+                'date_created': image.date_created.isoformat(),
+            } for image in images
+        ]
+
+    @auth.login_required
+    def post(self):
+        if request.is_json:
+            s3_key = request.get_json().get('s3_key')
+            s3_bucket = request.get_json().get('s3_bucket')
+            title = request.get_json().get('title', '')
+            description = request.get_json().get('description', '')
+        if not (s3_key and s3_bucket):
+            abort(
+                400,
+                message = 'Fields s3_key and s3_bucket must be provided.'
+            )
+        try:
+            image = Image.create(
+                user = g.user,
+                s3_key = s3_key,
+                s3_bucket = s3_bucket,
+                title = title,
+                description = description,
+                date_created = datetime.datetime.utcnow(),
+            )
+        except IntegrityError:
+            abort(
+                409,
+                message = 'Integrity Error.',
+            )
+        else:
+            return {
+                'user': image.user.username,
+                's3_key': image.s3_key,
+                's3_bucket': image.s3_bucket,
+                'title': image.title,
+                'description': image.description,
+                'date_created': image.date_created.isoformat(),
+            }
+
+class RestImage(Resource):
+    @auth.login_required
+    def get(self, s3_key):
+        try:
+            image = Image.get(
+                Image.s3_key == s3_key,
+                Image.user == g.user,
+            )
+        except Image.DoesNotExist:
+            abort(
+                404,
+                message = 'Image with s3_key {0} does not exist.'.format(s3_key)
+            )
+        return {
+            'user': image.user.username,
+            's3_key': image.s3_key,
+            's3_bucket': image.s3_bucket,
+            'title': image.title,
+            'description': image.description,
+            'date_created': image.date_created.isoformat(),
+        }
+
+    @auth.login_required
+    def delete(self, s3_key):
+        try:
+            image = Image.get(
+                Image.s3_key == s3_key,
+                Image.user == g.user,
+            )
+        except Image.DoesNotExist:
+            abort(
+                404,
+                message = 'Image with s3_key {0} does not exist.'.format(s3_key)
+            )
+        image.delete_instance(recursive=True)
+        return {
+            'user': image.user.username,
+            's3_key': image.s3_key,
+            's3_bucket': image.s3_bucket,
+            'title': image.title,
+            'description': image.description,
+            'date_created': image.date_created.isoformat(),
+        }
+
 api.add_resource(RestApiKeyList, '/api/api-keys')
 api.add_resource(RestApiKey, '/api/api-keys/<api_key_str>')
 api.add_resource(RestCollectionList, '/api/collections')
 api.add_resource(RestCollection, '/api/collections/<name>')
+api.add_resource(RestImageList, '/api/images')
+api.add_resource(RestImage, '/api/images/<path:s3_key>')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
