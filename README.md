@@ -76,9 +76,13 @@ description (optional)
 : A text description of the key. Use to indicate where this key is used.
 Defaults to an empty string.
 
-#### `GET /api/collection/{collection_name}`
+#### `GET /api/collections`
 
-Same as `/api/c/{collection_name}`.
+Returns a list of collections.
+
+#### `GET /api/collections/{collection_name}`
+
+Get a specific collection.
 
 #### `POST /api/collection/{collection_name}`
 
