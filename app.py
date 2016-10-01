@@ -547,6 +547,38 @@ class RestImage(Resource):
         }
 
     @auth.login_required
+    def put(self, s3_key):
+        if request.is_json:
+            title = request.get_json().get('title', '')
+            description = request.get_json().get('description', '')
+        else:
+            abort(
+                400,
+                message = 'Request must be of type application/json.'
+            )
+        try:
+            image = Image.get(
+                Image.s3_key == s3_key,
+                Image.user == g.user,
+            )
+        except Image.DoesNotExist:
+            abort(
+                404,
+                message = 'Image with s3_key {0} does not exist.'.format(s3_key)
+            )
+        image.description = description
+        image.title = title
+        image.save()
+        return {
+            'user': image.user.username,
+            's3_key': image.s3_key,
+            's3_bucket': image.s3_bucket,
+            'title': image.title,
+            'description': image.description,
+            'date_created': image.date_created.isoformat(),
+        }
+
+    @auth.login_required
     def delete(self, s3_key):
         try:
             image = Image.get(
