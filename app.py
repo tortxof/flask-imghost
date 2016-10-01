@@ -402,8 +402,75 @@ class RestApiKey(Resource):
                 'date_created': api_key.date_created.isoformat(),
             }
 
+class RestCollectionList(Resource):
+    @auth.login_required
+    def get(self):
+        collections = Collection.select().where(Collection.user == g.user)
+        return [
+            {
+                'name': collection.name,
+                'user': collection.user.username,
+            } for collection in collections
+        ]
+
+    @auth.login_required
+    def post(self):
+        if request.is_json:
+            name = request.get_json().get('name')
+        if name:
+            try:
+                collection = Collection.create(
+                    name = name,
+                    user = g.user,
+                )
+            except IntegrityError:
+                abort(
+                    409,
+                    message = 'A collection named {0} already exists.'.format(name)
+                )
+            else:
+                return {
+                    'name': collection.name,
+                    'user': collection.user.username,
+                }
+        else:
+            abort(
+                400,
+                message = 'Bad collection name.',
+            )
+
+class RestCollection(Resource):
+    @auth.login_required
+    def get(self, name):
+        try:
+            collection = Collection.get(
+                Collection.name == name,
+            )
+        except Collection.DoesNotExist:
+            abort(
+                404,
+                message = 'A collection named {0} does not exist.'.format(name)
+            )
+        if collection.user != g.user:
+            abort(403)
+        return {
+            'name': collection.name,
+            'user': collection.user.username,
+            'images': [
+                {
+                    'user': image.user.username,
+                    's3_key': image.s3_key,
+                    's3_bucket': image.s3_bucket,
+                    'title': image.title,
+                    'description': image.description,
+                    'date_created': image.date_created.isoformat(),
+                } for image in collection.images()
+            ],
+        }
+
 api.add_resource(RestApiKeyList, '/api/api-keys')
 api.add_resource(RestApiKey, '/api/api-keys/<api_key_str>')
-
+api.add_resource(RestCollectionList, '/api/collections')
+api.add_resource(RestCollection, '/api/collections/<name>')
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
