@@ -11,7 +11,7 @@ from flask import (
     url_for, jsonify
 )
 from flask_httpauth import HTTPBasicAuth
-from flask_restful import Resource, Api, abort
+from flask_restful import Resource, Api, abort, fields, marshal_with
 from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
 from PIL import Image as PImage
@@ -368,20 +368,22 @@ def get_json_image(s3_key):
         gen_image_dict(image)
     ), 200, {'Access-Control-Allow-Origin': '*'}
 
+user_resource_fields = {
+    'username': fields.String,
+    'email': fields.String,
+    'date_created': fields.DateTime(dt_format='iso8601'),
+}
+
 class UserList(Resource):
     @auth.login_required
+    @marshal_with(user_resource_fields)
     def get(self):
         users = models.User.select().where(
             models.User.username == g.user.username,
         )
-        return [
-            {
-                'username': user.username,
-                'email': user.email,
-                'date_created': user.date_created.isoformat(),
-            } for user in users
-        ]
+        return [user for user in users]
 
+    @marshal_with(user_resource_fields)
     def post(self):
         if request.is_json:
             username = request.get_json().get('username')
@@ -412,14 +414,11 @@ class UserList(Resource):
                 409,
                 message = 'Username or email already in use.',
             )
-        return {
-            'username': user.username,
-            'email': user.email,
-            'date_created': user.date_created.isoformat(),
-        }
+        return user
 
 class User(Resource):
     @auth.login_required
+    @marshal_with(user_resource_fields)
     def get(self, username):
         try:
             user = models.User.get(
@@ -431,13 +430,10 @@ class User(Resource):
                 404,
                 message = 'User {0} does not exist.'.format(username),
             )
-        return {
-            'username': user.username,
-            'email': user.email,
-            'date_created': user.date_created.isoformat(),
-        }
+        return user
 
     @auth.login_required
+    @marshal_with(user_resource_fields)
     def put(self, username):
         try:
             user = models.User.get(
@@ -471,13 +467,10 @@ class User(Resource):
                 409,
                 message = 'Email address already in use.',
             )
-        return {
-            'username': user.username,
-            'email': user.email,
-            'date_created': user.date_created.isoformat(),
-        }
+        return user
 
     @auth.login_required
+    @marshal_with(user_resource_fields)
     def delete(self, username):
         try:
             user = models.User.get(
@@ -490,26 +483,24 @@ class User(Resource):
                 message = 'User {0} does not exist.'.format(username),
             )
         user.delete_instance(recursive=True)
-        return {
-            'username': user.username,
-            'email': user.email,
-            'date_created': user.date_created.isoformat(),
-        }
+        return user
+
+api_key_resource_fields = {
+    'key': fields.String,
+    'user': fields.String(attribute='user.username'),
+    'description': fields.String,
+    'date_created': fields.DateTime(dt_format='iso8601'),
+}
 
 class ApiKeyList(Resource):
     @auth.login_required
+    @marshal_with(api_key_resource_fields)
     def get(self):
         api_keys = models.ApiKey.select().where(models.ApiKey.user == g.user)
-        return [
-            {
-                'key': api_key.key,
-                'user': api_key.user.username,
-                'description': api_key.description,
-                'date_created': api_key.date_created.isoformat(),
-            } for api_key in api_keys
-        ]
+        return [api_key for api_key in api_keys]
 
     @auth.login_required
+    @marshal_with(api_key_resource_fields)
     def post(self):
         if request.is_json:
             description = request.get_json().get('description', '')
@@ -521,15 +512,11 @@ class ApiKeyList(Resource):
             description = description,
             date_created = datetime.datetime.utcnow(),
         )
-        return {
-            'key': api_key.key,
-            'user': api_key.user.username,
-            'description': api_key.description,
-            'date_created': api_key.date_created.isoformat(),
-        }
+        return api_key
 
 class ApiKey(Resource):
     @auth.login_required
+    @marshal_with(api_key_resource_fields)
     def get(self, key):
         try:
             api_key = models.ApiKey.get(
@@ -541,15 +528,10 @@ class ApiKey(Resource):
                 404,
                 message = 'API key {0} does not exist.'.format(key)
             )
-        else:
-            return {
-                'key': api_key.key,
-                'user': api_key.user.username,
-                'description': api_key.description,
-                'date_created': api_key.date_created.isoformat(),
-            }
+        return api_key
 
     @auth.login_required
+    @marshal_with(api_key_resource_fields)
     def put(self, key):
         try:
             api_key = models.ApiKey.get(
@@ -571,14 +553,10 @@ class ApiKey(Resource):
         if description is not None:
             api_key.description = description
         api_key.save()
-        return {
-            'key': api_key.key,
-            'user': api_key.user.username,
-            'description': api_key.description,
-            'date_created': api_key.date_created.isoformat(),
-        }
+        return api_key
 
     @auth.login_required
+    @marshal_with(api_key_resource_fields)
     def delete(self, key):
         try:
             api_key = models.ApiKey.get(
@@ -591,13 +569,7 @@ class ApiKey(Resource):
                 message = 'API key {0} does not exist.'.format(key)
             )
         api_key.delete_instance(recursive=True)
-        return {
-            'key': api_key.key,
-            'user': api_key.user.username,
-            'description': api_key.description,
-            'date_created': api_key.date_created.isoformat(),
-        }
-
+        return api_key
 
 class CollectionList(Resource):
     @auth.login_required
