@@ -516,16 +516,16 @@ class RestApiKeyList(Resource):
 
 class RestApiKey(Resource):
     @auth.login_required
-    def get(self, api_key_str):
+    def get(self, key):
         try:
             api_key = ApiKey.get(
-                ApiKey.key == api_key_str,
+                ApiKey.key == key,
                 ApiKey.user == g.user,
             )
         except ApiKey.DoesNotExist:
             abort(
                 404,
-                message = 'API key {0} does not exist.'.format(api_key_str)
+                message = 'API key {0} does not exist.'.format(key)
             )
         else:
             return {
@@ -534,6 +534,27 @@ class RestApiKey(Resource):
                 'description': api_key.description,
                 'date_created': api_key.date_created.isoformat(),
             }
+
+    @auth.login_required
+    def delete(self, key):
+        try:
+            api_key = ApiKey.get(
+                ApiKey.key == key,
+                ApiKey.user == g.user,
+            )
+        except ApiKey.DoesNotExist:
+            abort(
+                404,
+                message = 'API key {0} does not exist.'.format(key)
+            )
+        api_key.delete_instance(recursive=True)
+        return {
+            'key': api_key.key,
+            'user': api_key.user.username,
+            'description': api_key.description,
+            'date_created': api_key.date_created.isoformat(),
+        }
+
 
 class RestCollectionList(Resource):
     @auth.login_required
@@ -679,7 +700,7 @@ class RestImage(Resource):
 api.add_resource(RestUserList, '/api/users')
 api.add_resource(RestUser, '/api/users/<username>')
 api.add_resource(RestApiKeyList, '/api/api-keys')
-api.add_resource(RestApiKey, '/api/api-keys/<api_key_str>')
+api.add_resource(RestApiKey, '/api/api-keys/<key>')
 api.add_resource(RestCollectionList, '/api/collections')
 api.add_resource(RestCollection, '/api/collections/<name>')
 api.add_resource(RestImageList, '/api/images')
