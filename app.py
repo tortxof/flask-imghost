@@ -550,6 +550,35 @@ class ApiKey(Resource):
             }
 
     @auth.login_required
+    def put(self, key):
+        try:
+            api_key = models.ApiKey.get(
+                models.ApiKey.key == key,
+                models.ApiKey.user == g.user,
+            )
+        except models.ApiKey.DoesNotExist:
+            abort(
+                404,
+                message = 'API key {0} does not exist.'.format(key)
+            )
+        if request.is_json:
+            description = request.get_json().get('description')
+        else:
+            abort(
+                400,
+                message = 'Request must be of type application/json.',
+            )
+        if description is not None:
+            api_key.description = description
+        api_key.save()
+        return {
+            'key': api_key.key,
+            'user': api_key.user.username,
+            'description': api_key.description,
+            'date_created': api_key.date_created.isoformat(),
+        }
+
+    @auth.login_required
     def delete(self, key):
         try:
             api_key = models.ApiKey.get(
