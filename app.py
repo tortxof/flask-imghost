@@ -16,16 +16,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
 from PIL import Image as PImage
 
-from database import (
-    database, User, Collection, Image, ImageCollection, ApiKey, IntegrityError
-)
+import models
 
-database.connect()
-database.create_tables(
-    [User, Collection, Image, ImageCollection, ApiKey],
-    safe=True
+models.database.connect()
+models.database.create_tables(
+    [
+        models.User,
+        models.Collection,
+        models.Image,
+        models.ImageCollection,
+        models.ApiKey
+    ],
+    safe=True,
 )
-database.close()
+models.database.close()
 
 app = Flask(__name__)
 api = Api(app)
@@ -45,16 +49,16 @@ app.config['AWS_SECRET_ACCESS_KEY'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
 @auth.verify_password
 def verify_password(username, password):
     try:
-        api_key = ApiKey.get(ApiKey.key == password)
-    except ApiKey.DoesNotExist:
+        api_key = models.ApiKey.get(models.ApiKey.key == password)
+    except models.ApiKey.DoesNotExist:
         pass
     else:
         if api_key:
             g.user = api_key.user
             return True
     try:
-        user = User.get(User.username == username)
-    except User.DoesNotExist:
+        user = models.User.get(models.User.username == username)
+    except models.User.DoesNotExist:
         return False
     if check_password_hash(user.password, password):
         g.user = user
@@ -63,7 +67,7 @@ def verify_password(username, password):
 
 @app.before_request
 def before_request():
-    g.database = database
+    g.database = models.database
     g.database.connect()
 
 @app.after_request
@@ -84,7 +88,7 @@ def login_required(f):
 THUMB_SIZES = (64, 128, 256, 512)
 
 def get_current_user():
-    return User.get(User.username == session['username'])
+    return models.User.get(models.User.username == session['username'])
 
 def get_s3_client():
     return boto3.client(
@@ -163,8 +167,10 @@ def login():
     error_flash_message = 'Incorrect name or password.'
     if request.method == 'POST':
         try:
-            user = User.get(User.username == request.form['username'])
-        except User.DoesNotExist:
+            user = models.User.get(
+                models.User.username == request.form['username'],
+            )
+        except models.User.DoesNotExist:
             flash(error_flash_message)
             return render_template('login.html')
         if check_password_hash(user.password, request.form['password']):
@@ -192,13 +198,13 @@ def signup():
             method = 'pbkdf2:sha256'
         )
         try:
-            User.create(
+            models.User.create(
                 email = request.form['email'],
                 username = request.form['username'],
                 password = password_hash,
                 date_created = datetime.datetime.utcnow(),
             )
-        except IntegrityError:
+        except models.IntegrityError:
             flash('That name or email is already taken.')
             return redirect(url_for('signup'))
         flash('Account created.')
@@ -210,7 +216,9 @@ def signup():
 @login_required
 def collections():
     user = get_current_user()
-    collections = Collection.select().where(Collection.user == user)
+    collections = models.Collection.select().where(
+        models.Collection.user == user,
+    )
     return render_template('collections.html', collections=collections)
 
 @app.route('/collections/delete', methods=['POST'])
@@ -218,9 +226,9 @@ def collections_delete():
     user = get_current_user()
     if request.form.get('delete'):
         collections = [
-            Collection.get(
-                (Collection.name == k) &
-                (Collection.user == user)
+            models.Collection.get(
+                (models.Collection.name == k) &
+                (models.Collection.user == user)
             )
             for k, v in request.form.to_dict().items() if v == 'selected'
         ]
@@ -235,11 +243,11 @@ def collections_create():
     user = get_current_user()
     name = request.form.get('name')
     try:
-        Collection.create(
+        models.Collection.create(
             user = user,
             name = name
         )
-    except IntegrityError:
+    except models.IntegrityError:
         flash('A collection with that name already exists.')
         return redirect(url_for('collections'))
     flash('New collection created.')
@@ -251,20 +259,20 @@ def images():
     user = get_current_user()
     if request.method == 'POST':
         images = [
-            Image.get(
-                (Image.s3_key == k) &
-                (Image.user == user)
+            models.Image.get(
+                (models.Image.s3_key == k) &
+                (models.Image.user == user)
             )
             for k, v in request.form.to_dict().items() if v == 'selected'
         ]
         if request.form.get('add_to_collection'):
-            collection = Collection.get(
-                (Collection.id == request.form.get('collection')) &
-                (Collection.user == user)
+            collection = models.Collection.get(
+                (models.Collection.id == request.form.get('collection')) &
+                (models.Collection.user == user)
             )
             for image in images:
                 try:
-                    ImageCollection.create(
+                    models.ImageCollection.create(
                         image = image,
                         collection = collection
                     )
@@ -272,7 +280,7 @@ def images():
                         'Image {0} added to collection {1}'
                         .format(image.s3_key, collection.name)
                     )
-                except IntegrityError:
+                except models.IntegrityError:
                     flash(
                         'Image {0} is already in collection {1}'
                         .format(image.s3_key, collection.name)
@@ -294,8 +302,10 @@ def images():
                 flash('Image {0} deleted'.format(image.s3_key))
             return redirect(url_for('images'))
     else:
-        images = Image.select().where(Image.user == user)
-        collections = Collection.select().where(Collection.user == user)
+        images = models.Image.select().where(models.Image.user == user)
+        collections = models.Collection.select().where(
+            models.Collection.user == user,
+        )
         return render_template(
             'images.html', images=images, collections=collections
         )
@@ -307,14 +317,14 @@ def upload():
     args = request.args.to_dict()
     if args:
         try:
-            image = Image.create(
+            image = models.Image.create(
                 s3_key = args['key'],
                 s3_bucket = args['bucket'],
                 user = user,
                 date_created = datetime.datetime.utcnow()
             )
             flash('Image {0} added.'.format(args['key']))
-        except IntegrityError:
+        except models.IntegrityError:
             flash('Image already exists.')
         create_thumbnails(image)
     key_prefix = base64.urlsafe_b64encode(os.urandom(6)).decode()
@@ -340,7 +350,9 @@ def upload():
 
 @app.route('/api/c/<collection_name>')
 def get_json_collection(collection_name):
-    collection = Collection.get(Collection.name == collection_name)
+    collection = models.Collection.get(
+        models.Collection.name == collection_name,
+    )
     return jsonify(
         name = collection.name,
         images = [
@@ -351,7 +363,7 @@ def get_json_collection(collection_name):
 
 @app.route('/api/i/<path:s3_key>')
 def get_json_image(s3_key):
-    image = Image.get(Image.s3_key == s3_key)
+    image = models.Image.get(models.Image.s3_key == s3_key)
     return jsonify(
         gen_image_dict(image)
     ), 200, {'Access-Control-Allow-Origin': '*'}
@@ -359,7 +371,9 @@ def get_json_image(s3_key):
 class RestUserList(Resource):
     @auth.login_required
     def get(self):
-        users = User.select().where(User.username == g.user.username)
+        users = models.User.select().where(
+            models.User.username == g.user.username,
+        )
         return [
             {
                 'username': user.username,
@@ -384,7 +398,7 @@ class RestUserList(Resource):
                 message = 'Username, email, and password must all be provided.',
             )
         try:
-            user = User.create(
+            user = models.User.create(
                 username = username,
                 email = email,
                 password = generate_password_hash(
@@ -393,7 +407,7 @@ class RestUserList(Resource):
                 ),
                 date_created = datetime.datetime.utcnow(),
             )
-        except IntegrityError:
+        except models.IntegrityError:
             abort(
                 409,
                 message = 'Username or email already in use.',
@@ -408,11 +422,11 @@ class RestUser(Resource):
     @auth.login_required
     def get(self, username):
         try:
-            user = User.get(
-                User.username == username,
-                User.username == g.user.username,
+            user = models.User.get(
+                models.User.username == username,
+                models.User.username == g.user.username,
             )
-        except User.DoesNotExist:
+        except models.User.DoesNotExist:
             abort(
                 404,
                 message = 'User {0} does not exist.'.format(username),
@@ -426,11 +440,11 @@ class RestUser(Resource):
     @auth.login_required
     def put(self, username):
         try:
-            user = User.get(
-                User.username == username,
-                User.username == g.user.username,
+            user = models.User.get(
+                models.User.username == username,
+                models.User.username == g.user.username,
             )
-        except User.DoesNotExist:
+        except models.User.DoesNotExist:
             abort(
                 404,
                 message = 'User {0} does not exist.'.format(username),
@@ -452,7 +466,7 @@ class RestUser(Resource):
             )
         try:
             user.save()
-        except IntegrityError:
+        except models.IntegrityError:
             abort(
                 409,
                 message = 'Email address already in use.',
@@ -466,11 +480,11 @@ class RestUser(Resource):
     @auth.login_required
     def delete(self, username):
         try:
-            user = User.get(
-                User.username == username,
-                User.username == g.user.username,
+            user = models.User.get(
+                models.User.username == username,
+                models.User.username == g.user.username,
             )
-        except User.DoesNotExist:
+        except models.User.DoesNotExist:
             abort(
                 404,
                 message = 'User {0} does not exist.'.format(username),
@@ -485,7 +499,7 @@ class RestUser(Resource):
 class RestApiKeyList(Resource):
     @auth.login_required
     def get(self):
-        api_keys = ApiKey.select().where(ApiKey.user == g.user)
+        api_keys = models.ApiKey.select().where(models.ApiKey.user == g.user)
         return [
             {
                 'key': api_key.key,
@@ -501,7 +515,7 @@ class RestApiKeyList(Resource):
             description = request.get_json().get('description', '')
         else:
             description = ''
-        api_key = ApiKey.create(
+        api_key = models.ApiKey.create(
             key = base64.urlsafe_b64encode(os.urandom(24)).decode(),
             user = g.user,
             description = description,
@@ -518,11 +532,11 @@ class RestApiKey(Resource):
     @auth.login_required
     def get(self, key):
         try:
-            api_key = ApiKey.get(
-                ApiKey.key == key,
-                ApiKey.user == g.user,
+            api_key = models.ApiKey.get(
+                models.ApiKey.key == key,
+                models.ApiKey.user == g.user,
             )
-        except ApiKey.DoesNotExist:
+        except models.ApiKey.DoesNotExist:
             abort(
                 404,
                 message = 'API key {0} does not exist.'.format(key)
@@ -538,11 +552,11 @@ class RestApiKey(Resource):
     @auth.login_required
     def delete(self, key):
         try:
-            api_key = ApiKey.get(
-                ApiKey.key == key,
-                ApiKey.user == g.user,
+            api_key = models.ApiKey.get(
+                models.ApiKey.key == key,
+                models.ApiKey.user == g.user,
             )
-        except ApiKey.DoesNotExist:
+        except models.ApiKey.DoesNotExist:
             abort(
                 404,
                 message = 'API key {0} does not exist.'.format(key)
@@ -559,7 +573,9 @@ class RestApiKey(Resource):
 class RestCollectionList(Resource):
     @auth.login_required
     def get(self):
-        collections = Collection.select().where(Collection.user == g.user)
+        collections = models.Collection.select().where(
+            models.Collection.user == g.user,
+        )
         return [collection.plain_dict_short() for collection in collections]
 
     @auth.login_required
@@ -577,11 +593,11 @@ class RestCollectionList(Resource):
                 message = 'Bad collection name.',
             )
         try:
-            collection = Collection.create(
+            collection = models.Collection.create(
                 name = name,
                 user = g.user,
             )
-        except IntegrityError:
+        except models.IntegrityError:
             abort(
                 409,
                 message = 'A collection named {0} already exists.'.format(name)
@@ -592,11 +608,11 @@ class RestCollection(Resource):
     @auth.login_required
     def get(self, name):
         try:
-            collection = Collection.get(
-                Collection.name == name,
-                Collection.user == g.user,
+            collection = models.Collection.get(
+                models.Collection.name == name,
+                models.Collection.user == g.user,
             )
-        except Collection.DoesNotExist:
+        except models.Collection.DoesNotExist:
             abort(
                 404,
                 message = 'A collection named {0} does not exist.'.format(name)
@@ -606,7 +622,7 @@ class RestCollection(Resource):
 class RestImageList(Resource):
     @auth.login_required
     def get(self):
-        images = Image.select().where(Image.user == g.user)
+        images = models.Image.select().where(models.Image.user == g.user)
         return [image.plain_dict() for image in images]
 
     @auth.login_required
@@ -627,7 +643,7 @@ class RestImageList(Resource):
                 message = 'Fields s3_key and s3_bucket must be provided.'
             )
         try:
-            image = Image.create(
+            image = models.Image.create(
                 user = g.user,
                 s3_key = s3_key,
                 s3_bucket = s3_bucket,
@@ -635,7 +651,7 @@ class RestImageList(Resource):
                 description = description,
                 date_created = datetime.datetime.utcnow(),
             )
-        except IntegrityError:
+        except models.IntegrityError:
             abort(
                 409,
                 message = 'Integrity Error.',
@@ -646,11 +662,11 @@ class RestImage(Resource):
     @auth.login_required
     def get(self, s3_key):
         try:
-            image = Image.get(
-                Image.s3_key == s3_key,
-                Image.user == g.user,
+            image = models.Image.get(
+                models.Image.s3_key == s3_key,
+                models.Image.user == g.user,
             )
-        except Image.DoesNotExist:
+        except models.Image.DoesNotExist:
             abort(
                 404,
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
@@ -668,11 +684,11 @@ class RestImage(Resource):
                 message = 'Request must be of type application/json.'
             )
         try:
-            image = Image.get(
-                Image.s3_key == s3_key,
-                Image.user == g.user,
+            image = models.Image.get(
+                models.Image.s3_key == s3_key,
+                models.Image.user == g.user,
             )
-        except Image.DoesNotExist:
+        except models.Image.DoesNotExist:
             abort(
                 404,
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
@@ -685,11 +701,11 @@ class RestImage(Resource):
     @auth.login_required
     def delete(self, s3_key):
         try:
-            image = Image.get(
-                Image.s3_key == s3_key,
-                Image.user == g.user,
+            image = models.Image.get(
+                models.Image.s3_key == s3_key,
+                models.Image.user == g.user,
             )
-        except Image.DoesNotExist:
+        except models.Image.DoesNotExist:
             abort(
                 404,
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
