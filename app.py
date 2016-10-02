@@ -368,7 +368,7 @@ def get_json_image(s3_key):
         gen_image_dict(image)
     ), 200, {'Access-Control-Allow-Origin': '*'}
 
-class RestUserList(Resource):
+class UserList(Resource):
     @auth.login_required
     def get(self):
         users = models.User.select().where(
@@ -418,7 +418,7 @@ class RestUserList(Resource):
             'date_created': user.date_created.isoformat(),
         }
 
-class RestUser(Resource):
+class User(Resource):
     @auth.login_required
     def get(self, username):
         try:
@@ -496,7 +496,7 @@ class RestUser(Resource):
             'date_created': user.date_created.isoformat(),
         }
 
-class RestApiKeyList(Resource):
+class ApiKeyList(Resource):
     @auth.login_required
     def get(self):
         api_keys = models.ApiKey.select().where(models.ApiKey.user == g.user)
@@ -528,7 +528,7 @@ class RestApiKeyList(Resource):
             'date_created': api_key.date_created.isoformat(),
         }
 
-class RestApiKey(Resource):
+class ApiKey(Resource):
     @auth.login_required
     def get(self, key):
         try:
@@ -570,7 +570,7 @@ class RestApiKey(Resource):
         }
 
 
-class RestCollectionList(Resource):
+class CollectionList(Resource):
     @auth.login_required
     def get(self):
         collections = models.Collection.select().where(
@@ -604,7 +604,7 @@ class RestCollectionList(Resource):
             )
         return collection.plain_dict()
 
-class RestCollection(Resource):
+class Collection(Resource):
     @auth.login_required
     def get(self, name):
         try:
@@ -619,7 +619,7 @@ class RestCollection(Resource):
             )
         return collection.plain_dict()
 
-class RestImageList(Resource):
+class ImageList(Resource):
     @auth.login_required
     def get(self):
         images = models.Image.select().where(models.Image.user == g.user)
@@ -658,7 +658,7 @@ class RestImageList(Resource):
             )
         return image.plain_dict()
 
-class RestImage(Resource):
+class Image(Resource):
     @auth.login_required
     def get(self, s3_key):
         try:
@@ -713,14 +713,14 @@ class RestImage(Resource):
         image.delete_instance(recursive=True)
         return image.plain_dict()
 
-api.add_resource(RestUserList, '/api/users')
-api.add_resource(RestUser, '/api/users/<username>')
-api.add_resource(RestApiKeyList, '/api/api-keys')
-api.add_resource(RestApiKey, '/api/api-keys/<key>')
-api.add_resource(RestCollectionList, '/api/collections')
-api.add_resource(RestCollection, '/api/collections/<name>')
-api.add_resource(RestImageList, '/api/images')
-api.add_resource(RestImage, '/api/images/<path:s3_key>')
+api.add_resource(UserList, '/api/users')
+api.add_resource(User, '/api/users/<username>')
+api.add_resource(ApiKeyList, '/api/api-keys')
+api.add_resource(ApiKey, '/api/api-keys/<key>')
+api.add_resource(CollectionList, '/api/collections')
+api.add_resource(Collection, '/api/collections/<name>')
+api.add_resource(ImageList, '/api/images')
+api.add_resource(Image, '/api/images/<path:s3_key>')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
