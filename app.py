@@ -676,8 +676,8 @@ class Image(Resource):
     @auth.login_required
     def put(self, s3_key):
         if request.is_json:
-            title = request.get_json().get('title', '')
-            description = request.get_json().get('description', '')
+            title = request.get_json().get('title')
+            description = request.get_json().get('description')
         else:
             abort(
                 400,
@@ -693,8 +693,10 @@ class Image(Resource):
                 404,
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
             )
-        image.description = description
-        image.title = title
+        if description is not None:
+            image.description = description
+        if title is not None:
+            image.title = title
         image.save()
         return image.plain_dict()
 
