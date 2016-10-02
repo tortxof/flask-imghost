@@ -356,6 +356,132 @@ def get_json_image(s3_key):
         gen_image_dict(image)
     ), 200, {'Access-Control-Allow-Origin': '*'}
 
+class RestUserList(Resource):
+    @auth.login_required
+    def get(self):
+        users = User.select().where(User.username == g.user.username)
+        return [
+            {
+                'username': user.username,
+                'email': user.email,
+                'date_created': user.date_created.isoformat(),
+            } for user in users
+        ]
+
+    def post(self):
+        if request.is_json:
+            username = request.get_json().get('username')
+            email = request.get_json().get('email')
+            password = request.get_json().get('password')
+        else:
+            abort(
+                400,
+                message = 'Request must be of type application/json.',
+            )
+        if not (username and email and password):
+            abort(
+                400,
+                message = 'Username, email, and password must all be provided.',
+            )
+        try:
+            user = User.create(
+                username = username,
+                email = email,
+                password = generate_password_hash(
+                    password,
+                    method = 'pbkdf2:sha256',
+                ),
+                date_created = datetime.datetime.utcnow(),
+            )
+        except IntegrityError:
+            abort(
+                409,
+                message = 'Username or email already in use.',
+            )
+        return {
+            'username': user.username,
+            'email': user.email,
+            'date_created': user.date_created.isoformat(),
+        }
+
+class RestUser(Resource):
+    @auth.login_required
+    def get(self, username):
+        try:
+            user = User.get(
+                User.username == username,
+                User.username == g.user.username,
+            )
+        except User.DoesNotExist:
+            abort(
+                404,
+                message = 'User {0} does not exist.'.format(username),
+            )
+        return {
+            'username': user.username,
+            'email': user.email,
+            'date_created': user.date_created.isoformat(),
+        }
+
+    @auth.login_required
+    def put(self, username):
+        try:
+            user = User.get(
+                User.username == username,
+                User.username == g.user.username,
+            )
+        except User.DoesNotExist:
+            abort(
+                404,
+                message = 'User {0} does not exist.'.format(username),
+            )
+        if request.is_json:
+            email = request.get_json().get('email')
+            password = request.get_json().get('password')
+        else:
+            abort(
+                400,
+                message = 'Request must be of type application/json.',
+            )
+        if email:
+            user.email = email
+        if password:
+            user.password = generate_password_hash(
+                password,
+                method = 'pbkdf2:sha256',
+            )
+        try:
+            user.save()
+        except IntegrityError:
+            abort(
+                409,
+                message = 'Email address already in use.',
+            )
+        return {
+            'username': user.username,
+            'email': user.email,
+            'date_created': user.date_created.isoformat(),
+        }
+
+    @auth.login_required
+    def delete(self, username):
+        try:
+            user = User.get(
+                User.username == username,
+                User.username == g.user.username,
+            )
+        except User.DoesNotExist:
+            abort(
+                404,
+                message = 'User {0} does not exist.'.format(username),
+            )
+        user.delete_instance(recursive=True)
+        return {
+            'username': user.username,
+            'email': user.email,
+            'date_created': user.date_created.isoformat(),
+        }
+
 class RestApiKeyList(Resource):
     @auth.login_required
     def get(self):
@@ -550,6 +676,8 @@ class RestImage(Resource):
         image.delete_instance(recursive=True)
         return image.plain_dict()
 
+api.add_resource(RestUserList, '/api/users')
+api.add_resource(RestUser, '/api/users/<username>')
 api.add_resource(RestApiKeyList, '/api/api-keys')
 api.add_resource(RestApiKey, '/api/api-keys/<api_key_str>')
 api.add_resource(RestCollectionList, '/api/collections')
