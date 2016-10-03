@@ -26,19 +26,6 @@ class Collection(BaseModel):
             .where(ImageCollection.collection == self)
         )
 
-    def plain_dict(self):
-        return {
-            'user': self.user.username,
-            'name': self.name,
-            'images': [image.plain_dict() for image in self.images()],
-        }
-
-    def plain_dict_short(self):
-        return {
-            'user': self.user.username,
-            'name': self.name,
-        }
-
 class Image(BaseModel):
     user = ForeignKeyField(User)
     s3_key = CharField(unique=True)
@@ -46,16 +33,6 @@ class Image(BaseModel):
     title = CharField(default='')
     description = TextField(default='')
     date_created = DateTimeField()
-
-    def plain_dict(self):
-        return {
-            'user': self.user.username,
-            's3_key': self.s3_key,
-            's3_bucket': self.s3_bucket,
-            'title': self.title,
-            'description': self.description,
-            'date_created': self.date_created.isoformat(),
-        }
 
     class Meta:
         order_by = ('-date_created',)
