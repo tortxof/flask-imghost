@@ -12,6 +12,7 @@ from flask import (
 )
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import Resource, Api, abort, fields, marshal_with
+from playhouse.shortcuts import model_to_dict
 from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
 from PIL import Image as PImage
@@ -372,6 +373,7 @@ user_resource_fields = {
     'username': fields.String,
     'email': fields.String,
     'date_created': fields.DateTime(dt_format='iso8601'),
+    'uri': fields.Url('user')
 }
 
 class UserList(Resource):
@@ -381,7 +383,7 @@ class UserList(Resource):
         users = models.User.select().where(
             models.User.username == g.user.username,
         )
-        return [user for user in users]
+        return [model_to_dict(user) for user in users]
 
     @marshal_with(user_resource_fields)
     def post(self):
@@ -414,7 +416,7 @@ class UserList(Resource):
                 409,
                 message = 'Username or email already in use.',
             )
-        return user
+        return model_to_dict(user)
 
 class User(Resource):
     @auth.login_required
@@ -430,7 +432,7 @@ class User(Resource):
                 404,
                 message = 'User {0} does not exist.'.format(username),
             )
-        return user
+        return model_to_dict(user)
 
     @auth.login_required
     @marshal_with(user_resource_fields)
@@ -467,7 +469,7 @@ class User(Resource):
                 409,
                 message = 'Email address already in use.',
             )
-        return user
+        return model_to_dict(user)
 
     @auth.login_required
     @marshal_with(user_resource_fields)
@@ -483,13 +485,14 @@ class User(Resource):
                 message = 'User {0} does not exist.'.format(username),
             )
         user.delete_instance(recursive=True)
-        return user
+        return model_to_dict(user)
 
 api_key_resource_fields = {
     'key': fields.String,
     'user': fields.String(attribute='user.username'),
     'description': fields.String,
     'date_created': fields.DateTime(dt_format='iso8601'),
+    'uri': fields.Url('apikey'),
 }
 
 class ApiKeyList(Resource):
@@ -497,7 +500,7 @@ class ApiKeyList(Resource):
     @marshal_with(api_key_resource_fields)
     def get(self):
         api_keys = models.ApiKey.select().where(models.ApiKey.user == g.user)
-        return [api_key for api_key in api_keys]
+        return [model_to_dict(api_key) for api_key in api_keys]
 
     @auth.login_required
     @marshal_with(api_key_resource_fields)
@@ -512,7 +515,7 @@ class ApiKeyList(Resource):
             description = description,
             date_created = datetime.datetime.utcnow(),
         )
-        return api_key
+        return model_to_dict(api_key)
 
 class ApiKey(Resource):
     @auth.login_required
@@ -528,7 +531,7 @@ class ApiKey(Resource):
                 404,
                 message = 'API key {0} does not exist.'.format(key)
             )
-        return api_key
+        return model_to_dict(api_key)
 
     @auth.login_required
     @marshal_with(api_key_resource_fields)
@@ -553,7 +556,7 @@ class ApiKey(Resource):
         if description is not None:
             api_key.description = description
         api_key.save()
-        return api_key
+        return model_to_dict(api_key)
 
     @auth.login_required
     @marshal_with(api_key_resource_fields)
@@ -569,11 +572,12 @@ class ApiKey(Resource):
                 message = 'API key {0} does not exist.'.format(key)
             )
         api_key.delete_instance(recursive=True)
-        return api_key
+        return model_to_dict(api_key)
 
 collection_resource_fields = {
     'user': fields.String(attribute='user.username'),
     'name': fields.String,
+    'uri': fields.Url('collection'),
 }
 
 class CollectionList(Resource):
@@ -583,7 +587,7 @@ class CollectionList(Resource):
         collections = models.Collection.select().where(
             models.Collection.user == g.user,
         )
-        return [collection for collection in collections]
+        return [model_to_dict(collection) for collection in collections]
 
     @auth.login_required
     @marshal_with(collection_resource_fields)
@@ -610,7 +614,7 @@ class CollectionList(Resource):
                 409,
                 message = 'A collection named {0} already exists.'.format(name)
             )
-        return collection
+        return model_to_dict(collection)
 
 image_resource_fields = {
     's3_key': fields.String,
@@ -619,11 +623,11 @@ image_resource_fields = {
     'title': fields.String,
     'description': fields.String,
     'date_created': fields.DateTime(dt_format='iso8601'),
+    'uri': fields.Url('image'),
 }
 
 collection_images_resource_fields = {
-    'user': fields.String(attribute='user.username'),
-    'name': fields.String,
+    **collection_resource_fields,
     'images': fields.List(fields.Nested(image_resource_fields)),
 }
 
@@ -641,7 +645,11 @@ class Collection(Resource):
                 404,
                 message = 'A collection named {0} does not exist.'.format(name)
             )
-        collection.images = collection.images()
+        images = [model_to_dict(image) for image in collection.images()]
+        collection = {
+            **model_to_dict(collection),
+            'images': images,
+            }
         return collection
 
 class ImageList(Resource):
@@ -649,7 +657,7 @@ class ImageList(Resource):
     @marshal_with(image_resource_fields)
     def get(self):
         images = models.Image.select().where(models.Image.user == g.user)
-        return [image for image in images]
+        return [model_to_dict(image) for image in images]
 
     @auth.login_required
     @marshal_with(image_resource_fields)
@@ -683,7 +691,7 @@ class ImageList(Resource):
                 409,
                 message = 'Integrity Error.',
             )
-        return image
+        return model_to_dict(image)
 
 class Image(Resource):
     @auth.login_required
@@ -699,7 +707,7 @@ class Image(Resource):
                 404,
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
             )
-        return image
+        return model_to_dict(image)
 
     @auth.login_required
     @marshal_with(image_resource_fields)
@@ -727,7 +735,7 @@ class Image(Resource):
         if title is not None:
             image.title = title
         image.save()
-        return image
+        return model_to_dict(image)
 
     @auth.login_required
     @marshal_with(image_resource_fields)
@@ -743,7 +751,7 @@ class Image(Resource):
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
             )
         image.delete_instance(recursive=True)
-        return image
+        return model_to_dict(image)
 
 api.add_resource(UserList, '/api/users')
 api.add_resource(User, '/api/users/<username>')
