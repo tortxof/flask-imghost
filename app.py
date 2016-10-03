@@ -571,15 +571,22 @@ class ApiKey(Resource):
         api_key.delete_instance(recursive=True)
         return api_key
 
+collection_resource_fields = {
+    'user': fields.String(attribute='user.username'),
+    'name': fields.String,
+}
+
 class CollectionList(Resource):
     @auth.login_required
+    @marshal_with(collection_resource_fields)
     def get(self):
         collections = models.Collection.select().where(
             models.Collection.user == g.user,
         )
-        return [collection.plain_dict_short() for collection in collections]
+        return [collection for collection in collections]
 
     @auth.login_required
+    @marshal_with(collection_resource_fields)
     def post(self):
         if request.is_json:
             name = request.get_json().get('name')
@@ -603,10 +610,26 @@ class CollectionList(Resource):
                 409,
                 message = 'A collection named {0} already exists.'.format(name)
             )
-        return collection.plain_dict()
+        return collection
+
+image_resource_fields = {
+    's3_key': fields.String,
+    's3_bucket': fields.String,
+    'user': fields.String(attribute='user.username'),
+    'title': fields.String,
+    'description': fields.String,
+    'date_created': fields.DateTime(dt_format='iso8601'),
+}
+
+collection_images_resource_fields = {
+    'user': fields.String(attribute='user.username'),
+    'name': fields.String,
+    'images': fields.List(fields.Nested(image_resource_fields)),
+}
 
 class Collection(Resource):
     @auth.login_required
+    @marshal_with(collection_images_resource_fields)
     def get(self, name):
         try:
             collection = models.Collection.get(
@@ -618,15 +641,18 @@ class Collection(Resource):
                 404,
                 message = 'A collection named {0} does not exist.'.format(name)
             )
-        return collection.plain_dict()
+        collection.images = collection.images()
+        return collection
 
 class ImageList(Resource):
     @auth.login_required
+    @marshal_with(image_resource_fields)
     def get(self):
         images = models.Image.select().where(models.Image.user == g.user)
-        return [image.plain_dict() for image in images]
+        return [image for image in images]
 
     @auth.login_required
+    @marshal_with(image_resource_fields)
     def post(self):
         if request.is_json:
             s3_key = request.get_json().get('s3_key')
@@ -657,10 +683,11 @@ class ImageList(Resource):
                 409,
                 message = 'Integrity Error.',
             )
-        return image.plain_dict()
+        return image
 
 class Image(Resource):
     @auth.login_required
+    @marshal_with(image_resource_fields)
     def get(self, s3_key):
         try:
             image = models.Image.get(
@@ -672,9 +699,10 @@ class Image(Resource):
                 404,
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
             )
-        return image.plain_dict()
+        return image
 
     @auth.login_required
+    @marshal_with(image_resource_fields)
     def put(self, s3_key):
         if request.is_json:
             title = request.get_json().get('title')
@@ -699,9 +727,10 @@ class Image(Resource):
         if title is not None:
             image.title = title
         image.save()
-        return image.plain_dict()
+        return image
 
     @auth.login_required
+    @marshal_with(image_resource_fields)
     def delete(self, s3_key):
         try:
             image = models.Image.get(
@@ -714,7 +743,7 @@ class Image(Resource):
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
             )
         image.delete_instance(recursive=True)
-        return image.plain_dict()
+        return image
 
 api.add_resource(UserList, '/api/users')
 api.add_resource(User, '/api/users/<username>')
