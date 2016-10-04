@@ -94,51 +94,74 @@ Defaults to an empty string.
 
 Delete an API key.
 
-#### `GET /api/collections`
+#### `/api/collections`
+
+##### GET
 
 Returns a list of collections.
 
-#### `GET /api/collections/{collection_name}`
+##### POST
 
-Get a specific collection.
+Create a new collection.
 
-#### `POST /api/collection/{collection_name}`
+Parameters:
 
-Creates a new collection.
+name
+: A unique name used to identify the collecion.
 
-Request:
+#### `/api/collections/<name>`
 
-```json
-{
-  "name": "<collection name>"
-}
-```
+##### GET
 
-Response:
+Get a specific collection. The returned collection object also contains the
+associated images.
 
-If collection is created successfully, returns a collection object.
+##### DELETE
 
-Errors:
+Delete a collecion.
 
-- 400: Bad collection name.
-- 401: Bad API key.
-- 409: Collection already exists.
+#### `/api/images`
 
-#### `PUT /api/collection/<collection name>`
+##### GET
 
-Add images to a collection.
+Returns a list of images.
 
-Request:
+##### POST
 
-```json
-{
-  "name": "<collection name>",
-  "images": [
-    "<image S3 key>"
-  ]
-}
-```
+Create a new image.
 
-Response:
+Parameters:
 
-If all images are successfully added, returns a collection object.
+s3_key
+: The S3 key of the image.
+
+s3_bucket
+: The S3 bucket where the image is stored.
+
+title (optional)
+: A title for the image.
+
+description (optional)
+: A description of the image.
+
+#### `/api/images/<s3_key`
+
+##### GET
+
+Get a specific image.
+
+##### PUT
+
+Update an image.
+
+Parameters:
+
+title (optional)
+: A title for the image.
+
+description (optional)
+: A description of the image.
+
+##### DELETE
+
+Delete an image.
