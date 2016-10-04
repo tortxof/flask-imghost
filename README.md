@@ -165,3 +165,23 @@ description (optional)
 ##### DELETE
 
 Delete an image.
+
+#### `/api/collections/<name>/images`
+
+##### GET
+
+Returns a list of images belonging to a collection.
+
+#### `/api/collections/<name>/images/<s3_key>`
+
+##### GET
+
+Get an image if it belongs to a collection.
+
+##### PUT
+
+Add an image to a collection.
+
+##### DELETE
+
+Remove an image from a collection.
