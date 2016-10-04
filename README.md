@@ -4,13 +4,13 @@ A flask based image hosting service.
 
 ## API
 
-The app exposes a read-only public API and a private with endpoints for
+The app exposes a read-only public API and a private API with endpoints for
 individual images and collections of images. All collection names share a common
 namespace.
 
-### Public Endpoints
+### Public Resources
 
-#### `/api/c/{collection_name}`
+#### `/api/c/<collection_name>`
 
 Returns a JSON object with the name of the collection and a list of images in
 the collection.
@@ -28,7 +28,7 @@ Example: `/api/c/my_collection`
 }
 ```
 
-#### `/api/i/{s3_key}`
+#### `/api/i/<s3_key>`
 
 Returns a JSON object with a single image.
 
@@ -52,21 +52,19 @@ Example: `/api/i/01V9PaTx/my_image.jpg`
 }
 ```
 
-### Private Endpoints
+### Private Resources
 
 All private endpoints require an API key or username and password sent using
 HTTP basic auth. When using an API key, send any string as the username, and the
 key as the password.
 
-#### `GET /api/api-keys`
+#### `/api/api-keys`
+
+##### GET
 
 Returns a list of API keys.
 
-#### `GET /api/api-keys/{api-key}`
-
-Get a specific API key.
-
-#### `POST /api/api-keys`
+##### POST
 
 Create a new API key.
 
@@ -75,6 +73,26 @@ Parameters:
 description (optional)
 : A text description of the key. Use to indicate where this key is used.
 Defaults to an empty string.
+
+#### `/api/api-keys/<key>`
+
+##### GET
+
+Get a specific API key.
+
+##### PUT
+
+Update an existing API key.
+
+Parameters:
+
+description
+: A text description of the key. Use to indicate where this key is used.
+Defaults to an empty string.
+
+##### DELETE
+
+Delete an API key.
 
 #### `GET /api/collections`
 
