@@ -652,6 +652,22 @@ class Collection(Resource):
             }
         return collection
 
+    @auth.login_required
+    @marshal_with(collection_resource_fields)
+    def delete(self, name):
+        try:
+            collection = models.Collection.get(
+                models.Collection.name == name,
+                models.Collection.user == g.user,
+            )
+        except models.Collection.DoesNotExist:
+            abort(
+                404,
+                message = 'A collection named {0} does not exist.'.format(name)
+            )
+        collection.delete_instance(recursive=True)
+        return model_to_dict(collection)
+
 class ImageList(Resource):
     @auth.login_required
     @marshal_with(image_resource_fields)
