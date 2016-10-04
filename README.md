@@ -144,7 +144,7 @@ title (optional)
 description (optional)
 : A description of the image.
 
-#### `/api/images/<s3_key`
+#### `/api/images/<s3_key>`
 
 ##### GET
 
