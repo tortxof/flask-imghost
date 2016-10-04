@@ -668,6 +668,133 @@ class Collection(Resource):
         collection.delete_instance(recursive=True)
         return model_to_dict(collection)
 
+class CollectionImageList(Resource):
+    @auth.login_required
+    @marshal_with(image_resource_fields)
+    def get(self, name):
+        try:
+            collection = models.Collection.get(
+                models.Collection.name == name,
+                models.Collection.user == g.user,
+            )
+        except models.Collection.DoesNotExist:
+            abort(
+                404,
+                message = 'A collection named {0} does not exist.'.format(name)
+            )
+        images = collection.images()
+        return [model_to_dict(image) for image in images]
+
+class CollectionImage(Resource):
+    @auth.login_required
+    @marshal_with(image_resource_fields)
+    def get(self, name, s3_key):
+        try:
+            collection = models.Collection.get(
+                models.Collection.name == name,
+                models.Collection.user == g.user,
+            )
+        except models.Collection.DoesNotExist:
+            abort(
+                404,
+                message = 'A collection named {0} does not exist.'.format(name)
+            )
+        try:
+            image = models.Image.get(
+                models.Image.s3_key == s3_key,
+                models.Image.user == g.user,
+            )
+        except models.Image.DoesNotExist:
+            abort(
+                404,
+                message = 'Image with s3_key {0} does not exist.'.format(s3_key)
+            )
+        try:
+            image_collection = models.ImageCollection.get(
+                models.ImageCollection.image == image,
+                models.ImageCollection.collection == collection,
+            )
+        except models.ImageCollection.DoesNotExist:
+            abort(
+                404,
+                message = (
+                    'Image with s3_key {0} '
+                    'is not in collection {1}.'.format(s3_key, name)
+                )
+            )
+        return model_to_dict(image)
+
+    @auth.login_required
+    @marshal_with(image_resource_fields)
+    def put(self, name, s3_key):
+        try:
+            collection = models.Collection.get(
+                models.Collection.name == name,
+                models.Collection.user == g.user,
+            )
+        except models.Collection.DoesNotExist:
+            abort(
+                404,
+                message = 'A collection named {0} does not exist.'.format(name)
+            )
+        try:
+            image = models.Image.get(
+                models.Image.s3_key == s3_key,
+                models.Image.user == g.user,
+            )
+        except models.Image.DoesNotExist:
+            abort(
+                404,
+                message = 'Image with s3_key {0} does not exist.'.format(s3_key)
+            )
+        try:
+            models.ImageCollection.create(
+                collection = collection,
+                image = image,
+            )
+        except models.IntegrityError:
+            pass
+        return model_to_dict(image)
+
+    @auth.login_required
+    @marshal_with(image_resource_fields)
+    def delete(self, name, s3_key):
+        try:
+            collection = models.Collection.get(
+                models.Collection.name == name,
+                models.Collection.user == g.user,
+            )
+        except models.Collection.DoesNotExist:
+            abort(
+                404,
+                message = 'A collection named {0} does not exist.'.format(name)
+            )
+        try:
+            image = models.Image.get(
+                models.Image.s3_key == s3_key,
+                models.Image.user == g.user,
+            )
+        except models.Image.DoesNotExist:
+            abort(
+                404,
+                message = 'Image with s3_key {0} does not exist.'.format(s3_key)
+            )
+        try:
+            image_collection = models.ImageCollection.get(
+                models.ImageCollection.image == image,
+                models.ImageCollection.collection == collection,
+            )
+        except models.ImageCollection.DoesNotExist:
+            abort(
+                404,
+                message = (
+                    'Image with s3_key {0} '
+                    'is not in collection {1}.'.format(s3_key, name)
+                )
+            )
+        image_collection.delete_instance(recursive=True)
+        return model_to_dict(image)
+
 class ImageList(Resource):
     @auth.login_required
     @marshal_with(image_resource_fields)
@@ -777,6 +904,8 @@ api.add_resource(CollectionList, '/api/collections')
 api.add_resource(Collection, '/api/collections/<name>')
 api.add_resource(ImageList, '/api/images')
 api.add_resource(Image, '/api/images/<path:s3_key>')
+api.add_resource(CollectionImageList, '/api/collections/<name>/images')
+api.add_resource(CollectionImage, '/api/collections/<name>/images/<path:s3_key>')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
