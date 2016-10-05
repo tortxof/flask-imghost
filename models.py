@@ -3,9 +3,12 @@ from peewee import (
     DateTimeField, IntegrityError
     )
 
+from playhouse.sqlite_ext import PrimaryKeyAutoIncrementField
+
 database = SqliteDatabase('/data/data.db')
 
 class BaseModel(Model):
+    id = PrimaryKeyAutoIncrementField()
     class Meta():
         database = database
 
