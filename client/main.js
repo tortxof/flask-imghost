@@ -6,6 +6,8 @@ import App from './app'
 import ApiKeys from './api_keys'
 import Collections from './collections'
 import Images from './images'
+import Login from './login'
+import CreateAccount from './create_account'
 
 ReactDOM.render(
   (
@@ -14,6 +16,8 @@ ReactDOM.render(
         <Route path='api-keys' component={ApiKeys} />
         <Route path='collections' component={Collections} />
         <Route path='images' component={Images} />
+        <Route path='create-account' component={CreateAccount} />
+        <Route path='login' component={Login} />
       </Route>
     </Router>
   ),
