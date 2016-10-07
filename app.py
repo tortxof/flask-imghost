@@ -161,7 +161,7 @@ def create_thumbnails(image):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('react-client.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
