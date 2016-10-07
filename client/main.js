@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Router, Route, Link, IndexRedirect, hashHistory} from 'react-router'
+import {Router, Route, Link, IndexRedirect, browserHistory} from 'react-router'
 
 import App from './app'
 import ApiKeys from './api_keys'
@@ -11,7 +11,7 @@ import CreateAccount from './create_account'
 
 ReactDOM.render(
   (
-    <Router history={hashHistory}>
+    <Router history={browserHistory}>
       <Route path='/' component={App}>
         <Route path='api-keys' component={ApiKeys} />
         <Route path='collections' component={Collections} />
