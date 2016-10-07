@@ -41,7 +41,6 @@ export default React.createClass({
         this.setState({
           message: 'User created.'
         })
-
       }
     })
 
