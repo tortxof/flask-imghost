@@ -6,13 +6,20 @@ export default React.createClass({
   setApiKey(key) {
     this.setState({apiKey: key})
   },
+  setUser(user) {
+    this.setState({
+      user: user
+    })
+  },
   getInitialState() {
     return {
-      apiKey: '',
+      user: null,
+      apiKey: null,
+      apiKeys: [],
       collections: [],
       images: [],
-      currentCollection: '',
-      currentImage: ''
+      currentCollection: null,
+      currentImage: null
     }
   },
   render() {
@@ -23,7 +30,8 @@ export default React.createClass({
           React.cloneElement(
             this.props.children,
             {
-              setApiKey: this.setApiKey
+              setApiKey: this.setApiKey,
+              setUser: this.setUser
             }
           )
         }
