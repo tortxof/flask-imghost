@@ -11,6 +11,27 @@ export default React.createClass({
       user: user
     })
   },
+  updateApiKeys() {
+    if (this.state.apiKey) {
+      const auth_string = btoa(`:${this.state.apiKey.key}`)
+      fetch('/api/api-keys', {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${auth_string}`
+        }
+      })
+      .then(response => {
+        if (response.status === 200) {
+          response.json().then(apiKeys => {
+            this.setState({
+              apiKeys: apiKeys
+            })
+          })
+        }
+      })
+    }
+  },
   getInitialState() {
     return {
       user: null,
@@ -31,7 +52,9 @@ export default React.createClass({
             this.props.children,
             {
               setApiKey: this.setApiKey,
-              setUser: this.setUser
+              setUser: this.setUser,
+              updateApiKeys: this.updateApiKeys,
+              apiKeys: this.state.apiKeys
             }
           )
         }
