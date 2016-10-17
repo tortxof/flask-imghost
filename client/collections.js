@@ -59,7 +59,10 @@ export default React.createClass({
     return (
       <div>
         <div>Collections</div>
-        <NewCollectionForm apiKey={this.props.apiKey} updateCollections={this.props.updateCollections} />
+        <NewCollectionForm
+          apiKey={this.props.apiKey}
+          updateCollections={this.props.updateCollections}
+        />
         {
           this.props.collections.map(
             collection => (

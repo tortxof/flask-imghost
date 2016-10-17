@@ -60,7 +60,10 @@ export default React.createClass({
     return (
       <div>
         <div>API Keys</div>
-        <NewApiKeyForm apiKey={this.props.apiKey} updateApiKeys={this.props.updateApiKeys} />
+        <NewApiKeyForm
+          apiKey={this.props.apiKey}
+          updateApiKeys={this.props.updateApiKeys}
+        />
         {
           this.props.apiKeys.map(
             api_key => <ApiKey api_key={api_key} key={api_key.key} />
