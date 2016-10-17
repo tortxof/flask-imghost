@@ -77,6 +77,7 @@ export default React.createClass({
               updateApiKeys: this.updateApiKeys,
               updateCollections: this.updateCollections,
               apiKeys: this.state.apiKeys,
+              apiKey: this.state.apiKey,
               collections: this.state.collections
             }
           )
