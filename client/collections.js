@@ -16,7 +16,16 @@ export default React.createClass({
     return (
       <div>
         <div>Collections</div>
-        {this.props.collections.map(collection => <Collection collection={collection} />)}
+        {
+          this.props.collections.map(
+            collection => (
+              <Collection
+                collection={collection}
+                key={collection.name}
+              />
+            )
+          )
+        }
       </div>
     )
   }

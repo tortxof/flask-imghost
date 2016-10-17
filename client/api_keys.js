@@ -18,7 +18,11 @@ export default React.createClass({
     return (
       <div>
         <div>API Keys</div>
-        {this.props.apiKeys.map(api_key => <ApiKey api_key={api_key} />)}
+        {
+          this.props.apiKeys.map(
+            api_key => <ApiKey api_key={api_key} key={api_key.key} />
+          )
+        }
       </div>
     )
   }
