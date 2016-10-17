@@ -67,7 +67,7 @@ export default React.createClass({
   render() {
     return (
       <div>
-        <Nav />
+        <Nav user={this.state.user} />
         {
           React.cloneElement(
             this.props.children,
