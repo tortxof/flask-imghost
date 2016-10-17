@@ -32,6 +32,27 @@ export default React.createClass({
       })
     }
   },
+  updateCollections() {
+    if (this.state.apiKey) {
+      const auth_string = btoa(`:${this.state.apiKey.key}`)
+      fetch('/api/collections', {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${auth_string}`
+        }
+      })
+      .then(response => {
+        if (response.status === 200) {
+          response.json().then(collections => {
+            this.setState({
+              collections: collections
+            })
+          })
+        }
+      })
+    }
+  },
   getInitialState() {
     return {
       user: null,
@@ -54,7 +75,9 @@ export default React.createClass({
               setApiKey: this.setApiKey,
               setUser: this.setUser,
               updateApiKeys: this.updateApiKeys,
-              apiKeys: this.state.apiKeys
+              updateCollections: this.updateCollections,
+              apiKeys: this.state.apiKeys,
+              collections: this.state.collections
             }
           )
         }
