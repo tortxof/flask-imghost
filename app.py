@@ -74,6 +74,7 @@ def verify_password(username, password):
     if check_password_hash(user.password, password):
         g.user = user
         session['username'] = g.user.username
+        session.permanent = True
         return True
     return False
 
