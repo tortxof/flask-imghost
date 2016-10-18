@@ -3,6 +3,73 @@ import React from 'react'
 import Nav from './nav'
 
 export default React.createClass({
+  handleUpload(file) {
+    fetch('/api/signed-post', {credentials: 'same-origin'})
+    .then(response => {
+      response.json().then(post => {
+        const formData = new FormData()
+        const key = post.fields.key.split('/')[0] + '/' + file.name
+        Object.keys(post.fields).forEach(field => {
+          formData.set(field, post.fields[field])
+        })
+        formData.set('Content-Type', file.type)
+        formData.set('file', file)
+        const xhr = new XMLHttpRequest()
+        xhr.upload.addEventListener('progress', event => {
+          if (event.lengthComputable) {
+            this.setState(previousState => {
+              const uploads = Object.assign({}, previousState.uploads)
+              uploads[key] = {
+                filename: file.name,
+                message: 'Uploading...',
+                loaded: event.loaded,
+                total: event.total
+              }
+              return {uploads: uploads}
+            })
+          }
+        })
+        xhr.addEventListener('load', event => {
+          this.setState(previousState => {
+            const uploads = Object.assign({}, previousState.uploads)
+            uploads[key] = {
+              filename: (<a href={`${post.url}${key}`} target='_blank'>{file.name}</a>),
+              message: 'Upload complete.',
+              loaded: file.size,
+              total: file.size
+            }
+            return {uploads: uploads}
+          })
+        })
+        xhr.addEventListener('error', event => {
+          this.setState(previousState => {
+            const uploads = Object.assign({}, previousState.uploads)
+            uploads[key] = {
+              filename: file.name,
+              message: 'Error uploading file.',
+              loaded: 0,
+              total: file.size
+            }
+            return {uploads: uploads}
+          })
+        })
+        xhr.addEventListener('abort', event => {
+          this.setState(previousState => {
+            const uploads = Object.assign({}, previousState.uploads)
+            uploads[key] = {
+              filename: file.name,
+              message: 'Upload aborted.',
+              loaded: 0,
+              total: file.size
+            }
+            return {uploads: uploads}
+          })
+        })
+        xhr.open('POST', post.url, true)
+        xhr.send(formData)
+      })
+    })
+  },
   setUser(user) {
     this.setState({
       user: user
@@ -85,6 +152,7 @@ export default React.createClass({
       apiKeys: [],
       collections: [],
       images: [],
+      uploads: {},
       currentCollection: null,
       currentImage: null
     }
@@ -99,10 +167,12 @@ export default React.createClass({
               this.props.children,
               {
                 setUser: this.setUser,
+                handleUpload: this.handleUpload,
                 updateApiKeys: this.updateApiKeys,
                 updateCollections: this.updateCollections,
                 apiKeys: this.state.apiKeys,
-                collections: this.state.collections
+                collections: this.state.collections,
+                uploads: this.state.uploads
               }
             )
           }

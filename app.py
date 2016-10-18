@@ -191,6 +191,7 @@ def create_thumbnails(image):
 @app.route('/create-account')
 @app.route('/collections')
 @app.route('/images')
+@app.route('/upload')
 @app.route('/api-keys')
 @app.route('/')
 def index():
@@ -409,6 +410,7 @@ user_resource_fields = {
 }
 
 class SignedPost(Resource):
+    @auth.login_required
     def get(self):
         return gen_signed_post(get_s3_client())
 
