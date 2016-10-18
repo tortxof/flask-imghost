@@ -1,10 +1,12 @@
 import React from 'react'
 
 const Collection = ({
-  collection
+  collection,
+  handleDelete
 }) => (
   <div className='collection'>
     <div>{collection.name}</div>
+    <button data-uri={collection.uri} onClick={handleDelete}>&times;</button>
   </div>
 )
 
@@ -55,6 +57,23 @@ export default React.createClass({
   componentDidMount() {
     this.props.updateCollections()
   },
+  handleDelete(e) {
+    const uri = e.target.dataset.uri
+    const auth_string = btoa(`:${this.props.apiKey.key}`)
+    fetch(uri, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${auth_string}`
+      },
+      method: 'DELETE'
+    })
+    .then(response => {
+      if (response.status >= 200 && response.status < 300) {
+        this.props.updateCollections()
+      }
+    })
+  },
   render() {
     return (
       <div>
@@ -69,6 +88,7 @@ export default React.createClass({
               <Collection
                 collection={collection}
                 key={collection.name}
+                handleDelete={this.handleDelete}
               />
             )
           )
