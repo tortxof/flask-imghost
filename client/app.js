@@ -186,6 +186,7 @@ export default React.createClass({
       this.setState({
         images: []
       })
+      return
     }
     fetch('/api/images', {
       headers: {
