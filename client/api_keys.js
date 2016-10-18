@@ -1,12 +1,14 @@
 import React from 'react'
 
 const ApiKey = ({
-  api_key
+  api_key,
+  handleDelete
 }) => (
   <div className='api-key'>
     <div>{api_key.key}</div>
     <div>{api_key.description}</div>
     <div>{api_key.date_created}</div>
+    <button data-uri={api_key.uri} onClick={handleDelete}>&times;</button>
   </div>
 )
 
@@ -56,6 +58,23 @@ export default React.createClass({
   componentDidMount() {
     this.props.updateApiKeys()
   },
+  handleDelete(e) {
+    const uri = e.target.dataset.uri
+    const auth_string = btoa(`:${this.props.apiKey.key}`)
+    fetch(uri, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${auth_string}`
+      },
+      method: 'DELETE'
+    })
+    .then(response => {
+      if (response.status >= 200 && response.status < 300) {
+        this.props.updateApiKeys()
+      }
+    })
+  },
   render() {
     return (
       <div>
@@ -66,7 +85,13 @@ export default React.createClass({
         />
         {
           this.props.apiKeys.map(
-            api_key => <ApiKey api_key={api_key} key={api_key.key} />
+            api_key => (
+              <ApiKey
+                handleDelete={this.handleDelete}
+                api_key={api_key}
+                key={api_key.key}
+              />
+            )
           )
         }
       </div>
