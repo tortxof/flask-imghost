@@ -160,6 +160,29 @@ export default React.createClass({
       }
     })
   },
+  updateImages() {
+    if (!this.state.user) {
+      this.setState({
+        images: []
+      })
+    }
+    fetch('/api/images', {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    })
+    .then(response => {
+      if (response.status === 200) {
+        response.json().then(images => {
+          this.setState({
+            images: images
+          })
+        })
+      }
+    })
+  },
   componentDidMount() {
     this.getLoggedInUser()
   },
@@ -187,8 +210,10 @@ export default React.createClass({
                 handleUpload: this.handleUpload,
                 updateApiKeys: this.updateApiKeys,
                 updateCollections: this.updateCollections,
+                updateImages: this.updateImages,
                 apiKeys: this.state.apiKeys,
                 collections: this.state.collections,
+                images: this.state.images,
                 uploads: this.state.uploads
               }
             )
