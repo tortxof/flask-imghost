@@ -31,7 +31,7 @@ export default React.createClass({
     e.target.value = ''
   },
   render() {
-    const uploads = Object.keys(this.props.uploads).map(key => {
+    const uploads = Object.keys(this.props.uploads).reverse().map(key => {
       return (
         <FileUpload
           key={key}
@@ -45,7 +45,9 @@ export default React.createClass({
     return (
       <div>
         <input type='file' name='file' onChange={this.handleChange} multiple />
-        {uploads}
+        <div className='uploads'>
+          {uploads}
+        </div>
       </div>
     )
   }
