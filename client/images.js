@@ -26,7 +26,7 @@ export default React.createClass({
   },
   render() {
     const images = this.props.images.map(image => (
-      <Image image={image} />
+      <Image key={image.s3_key} image={image} />
     ))
     return (
       <div>
