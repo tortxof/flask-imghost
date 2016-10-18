@@ -9,7 +9,7 @@ export default React.createClass({
     })
   },
   getLoggedInUser() {
-    fetch('/api/users', {
+    fetch('/api/session', {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -18,10 +18,10 @@ export default React.createClass({
     })
     .then(response => {
       if (response.status === 200) {
-        response.json().then(users => {
-          if (users.length > 0) {
+        response.json().then(session => {
+          if (session.loggedIn) {
             this.setState({
-              user: users[0]
+              user: session.user
             })
           }
         })

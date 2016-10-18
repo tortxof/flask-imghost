@@ -391,6 +391,21 @@ user_resource_fields = {
     'uri': fields.Url('user')
 }
 
+class Session(Resource):
+    @marshal_with({
+        'user': fields.Nested(user_resource_fields, allow_null=True),
+        'loggedIn': fields.Boolean(),
+        })
+    def get(self):
+        not_logged_in_response = {'loggedIn': False, 'user': None}
+        if 'username' in session:
+            try:
+                user = models.User.get(models.User.username == session.get('username'))
+            except models.User.DoesNotExist:
+                return not_logged_in_response
+            return {'loggedIn': True, 'user': model_to_dict(user)}
+        return not_logged_in_response
+
 class UserList(Resource):
     @auth.login_required
     @marshal_with(user_resource_fields)
@@ -911,6 +926,7 @@ class Image(Resource):
         image.delete_instance(recursive=True)
         return model_to_dict(image)
 
+api.add_resource(Session, '/api/session')
 api.add_resource(UserList, '/api/users')
 api.add_resource(User, '/api/users/<username>')
 api.add_resource(ApiKeyList, '/api/api-keys')
