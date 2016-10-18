@@ -5,7 +5,7 @@ const Collection = ({
   handleDelete
 }) => (
   <div className='collection'>
-    <div>{collection.name}</div>
+    <div className='name'>{collection.name}</div>
     <button data-uri={collection.uri} onClick={handleDelete}>&times;</button>
   </div>
 )
