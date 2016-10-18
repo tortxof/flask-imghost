@@ -19,13 +19,12 @@ const NewCollectionForm = React.createClass({
   handleSubmit(e) {
     e.preventDefault()
     if (this.state.name.length > 0) {
-      const auth_string = btoa(`:${this.props.apiKey.key}`)
       fetch('/api/collections', {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Basic ${auth_string}`
         },
+        credentials: 'same-origin',
         method: 'POST',
         body: JSON.stringify({name: this.state.name})
       })
@@ -59,13 +58,12 @@ export default React.createClass({
   },
   handleDelete(e) {
     const uri = e.target.dataset.uri
-    const auth_string = btoa(`:${this.props.apiKey.key}`)
     fetch(uri, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${auth_string}`
       },
+      credentials: 'same-origin',
       method: 'DELETE'
     })
     .then(response => {

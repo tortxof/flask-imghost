@@ -20,13 +20,12 @@ const NewApiKeyForm = React.createClass({
   },
   handleSubmit(e) {
     e.preventDefault()
-    const auth_string = btoa(`:${this.props.apiKey.key}`)
     fetch('/api/api-keys', {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${auth_string}`
       },
+      credentials: 'same-origin',
       method: 'POST',
       body: JSON.stringify({description: this.state.description})
     })
@@ -60,13 +59,12 @@ export default React.createClass({
   },
   handleDelete(e) {
     const uri = e.target.dataset.uri
-    const auth_string = btoa(`:${this.props.apiKey.key}`)
     fetch(uri, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${auth_string}`
       },
+      credentials: 'same-origin',
       method: 'DELETE'
     })
     .then(response => {

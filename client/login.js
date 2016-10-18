@@ -19,47 +19,13 @@ export default React.createClass({
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': `Basic ${auth_string}`
-      }
+      },
+      credentials: 'same-origin'
     })
     .then(response => {
       if (response.status === 200) {
-        response.json().then(json => {
-          this.props.setUser(json[0])
-        })
-        fetch('/api/api-keys', {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Basic ${auth_string}`
-          }
-        })
-        .then(response => {
-          if (response.status === 200) {
-            response.json().then(api_keys => {
-              if (api_keys.length > 0) {
-                this.props.setApiKey(api_keys[0])
-              } else {
-                fetch('/api/api-keys', {
-                  method: 'POST',
-                  headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Basic ${auth_string}`
-                  },
-                  body: JSON.stringify({
-                    description: 'Automatically generated API key.'
-                  })
-                })
-                .then(response => {
-                  if (response.status >= 200 && response.status < 300) {
-                    response.json().then(api_key => {
-                      this.props.setApiKey(api_key)
-                    })
-                  }
-                })
-              }
-            })
-          }
+        response.json().then(users => {
+          this.props.setUser(users[0])
         })
       }
     })
@@ -86,6 +52,7 @@ export default React.createClass({
           />
           <button type='submit'>Log In</button>
         </form>
+        <a href='/logout'>Log Out</a>
       </div>
     )
   }

@@ -7,7 +7,7 @@ import hashlib
 from urllib.parse import quote_plus
 
 from flask import (
-    Flask, render_template, request, flash, g, session, redirect,
+    Flask, render_template, request, g, session, redirect,
     url_for, jsonify
 )
 from flask_httpauth import HTTPBasicAuth
@@ -49,6 +49,15 @@ app.config['AWS_SECRET_ACCESS_KEY'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
 @auth.verify_password
 def verify_password(username, password):
+    if 'username' in session:
+        try:
+            user = models.User.get(
+                models.User.username == session.get('username')
+            )
+        except models.User.DoesNotExist:
+            session.pop('username', None)
+        g.user = user
+        return True
     try:
         api_key = models.ApiKey.get(models.ApiKey.key == password)
     except models.ApiKey.DoesNotExist:
@@ -56,6 +65,7 @@ def verify_password(username, password):
     else:
         if api_key:
             g.user = api_key.user
+            session['username'] = g.user.username
             return True
     try:
         user = models.User.get(models.User.username == username)
@@ -63,6 +73,7 @@ def verify_password(username, password):
         return False
     if check_password_hash(user.password, password):
         g.user = user
+        session['username'] = g.user.username
         return True
     return False
 
@@ -159,12 +170,12 @@ def create_thumbnails(image):
             Body = thumb_file.read(),
         )
 
-@app.route('/')
 @app.route('/login')
 @app.route('/create-account')
 @app.route('/collections')
 @app.route('/images')
 @app.route('/api-keys')
+@app.route('/')
 def index():
     return render_template('react-client.html')
 
@@ -190,12 +201,11 @@ def index():
 #     else:
 #         return render_template('login.html')
 #
-# @app.route('/logout')
-# def logout():
-#     session.pop('username', None)
-#     flash('You have been logged out.')
-#     return redirect(url_for('index'))
-#
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('index'))
+
 # @app.route('/signup', methods=['GET', 'POST'])
 # def signup():
 #     if request.method == 'POST':
