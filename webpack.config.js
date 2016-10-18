@@ -2,7 +2,7 @@ const path = require('path')
 const webpack = require('webpack')
 
 module.exports = {
-  entry: ['babel-polyfill', 'whatwg-fetch', './client/main.js'],
+  entry: ['babel-polyfill', 'whatwg-fetch', './client/sass/main.sass', './client/main.js'],
   output: {
     path: path.resolve(__dirname, 'static'),
     publicPath: '/static/',
@@ -14,6 +14,10 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         loader: 'babel-loader'
+      },
+      {
+        test: /\.sass$/,
+        loaders: ['style', 'css', 'sass']
       }
     ]
   },
