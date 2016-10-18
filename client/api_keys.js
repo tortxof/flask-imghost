@@ -5,9 +5,9 @@ const ApiKey = ({
   handleDelete
 }) => (
   <div className='api-key'>
-    <div>{api_key.key}</div>
-    <div>{api_key.description}</div>
-    <div>{api_key.date_created}</div>
+    <div className='key'>{api_key.key}</div>
+    <div className='description'>{api_key.description}</div>
+    <div className='date'>{api_key.date_created}</div>
     <button data-uri={api_key.uri} onClick={handleDelete}>&times;</button>
   </div>
 )
