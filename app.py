@@ -860,7 +860,10 @@ class ImageList(Resource):
     def post(self):
         if request.is_json:
             s3_key = request.get_json().get('s3_key')
-            s3_bucket = request.get_json().get('s3_bucket')
+            s3_bucket = request.get_json().get(
+                's3_bucket',
+                app.config['S3_BUCKET']
+            )
             title = request.get_json().get('title', '')
             description = request.get_json().get('description', '')
         else:

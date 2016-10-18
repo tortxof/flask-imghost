@@ -3,6 +3,22 @@ import React from 'react'
 import Nav from './nav'
 
 export default React.createClass({
+  createImage(image) {
+    fetch('/api/images', {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin',
+      method: 'POST',
+      body: JSON.stringify(image)
+    })
+    .then(response => {
+      if (response.status >= 200 && response.status < 300) {
+        console.log('added', image)
+      }
+    })
+  },
   handleUpload(file) {
     fetch('/api/signed-post', {credentials: 'same-origin'})
     .then(response => {
@@ -40,6 +56,7 @@ export default React.createClass({
             }
             return {uploads: uploads}
           })
+          this.createImage({'s3_key': key})
         })
         xhr.addEventListener('error', event => {
           this.setState(previousState => {
