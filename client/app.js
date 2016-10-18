@@ -29,6 +29,12 @@ export default React.createClass({
     })
   },
   updateApiKeys() {
+    if (!this.state.user) {
+      this.setState({
+        apiKeys: []
+      })
+      return
+    }
     fetch('/api/api-keys', {
       headers: {
         'Accept': 'application/json',
@@ -47,6 +53,12 @@ export default React.createClass({
     })
   },
   updateCollections() {
+    if (!this.state.user) {
+      this.setState({
+        collections: []
+      })
+      return
+    }
     fetch('/api/collections', {
       headers: {
         'Accept': 'application/json',
