@@ -162,13 +162,16 @@ def gen_s3_url(key, bucket):
     )
 
 def create_thumbnails(image):
+    s3 = get_s3_client()
+    s3_object = s3.get_object(
+        Bucket = image.s3_bucket,
+        Key = image.s3_key
+    )
+    s3_object_body = tempfile.SpooledTemporaryFile()
+    s3_object_body.write(s3_object['Body'].read())
     for size in THUMB_SIZES:
-        s3 = get_s3_client()
-        s3_object = s3.get_object(
-            Bucket = image.s3_bucket,
-            Key = image.s3_key
-        )
-        pil_object = PImage.open(s3_object['Body'])
+        s3_object_body.seek(0)
+        pil_object = PImage.open(s3_object_body)
         pil_object.thumbnail((size, size))
         thumb_file = tempfile.SpooledTemporaryFile()
         pil_object.save(thumb_file, format='JPEG', quality=60, optimize=True)
@@ -890,6 +893,7 @@ class ImageList(Resource):
                 409,
                 message = 'Integrity Error.',
             )
+        create_thumbnails(image)
         return model_to_dict(image)
 
 class Image(Resource):
