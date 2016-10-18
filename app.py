@@ -110,6 +110,22 @@ def get_s3_client():
         aws_secret_access_key = app.config['AWS_SECRET_ACCESS_KEY']
         )
 
+def gen_signed_post(s3_client):
+    return s3_client.generate_presigned_post(
+        Bucket = app.config['S3_BUCKET'],
+        Key = base64.urlsafe_b64encode(os.urandom(3)).decode() + '/${filename}',
+        Fields = {
+            'acl': 'public-read',
+            'success_action_status': '204',
+        },
+        Conditions = [
+            {'acl': 'public-read'},
+            ['starts-with', '$success_action_status', '204'],
+            ['starts-with', '$Content-Type', ''],
+        ],
+        ExpiresIn = 600
+    )
+
 def gen_image_dict(image):
     return {
         'title': image.title,
@@ -391,6 +407,10 @@ user_resource_fields = {
     'date_created': fields.DateTime(dt_format='iso8601'),
     'uri': fields.Url('user')
 }
+
+class SignedPost(Resource):
+    def get(self):
+        return gen_signed_post(get_s3_client())
 
 class Session(Resource):
     @marshal_with({
@@ -927,6 +947,7 @@ class Image(Resource):
         image.delete_instance(recursive=True)
         return model_to_dict(image)
 
+api.add_resource(SignedPost, '/api/signed-post')
 api.add_resource(Session, '/api/session')
 api.add_resource(UserList, '/api/users')
 api.add_resource(User, '/api/users/<username>')
