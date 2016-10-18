@@ -25,6 +25,18 @@ export default React.createClass({
       }
     })
   },
+  toggleImageSelect(e) {
+    const key = e.target.dataset.key
+    const images = this.state.images.map(image => {
+      if (image.s3_key === key) {
+        image.selected = !image.selected
+      }
+      return image
+    })
+    this.setState({
+      images: images
+    })
+  },
   handleUpload(file) {
     fetch('/api/signed-post', {credentials: 'same-origin'})
     .then(response => {
@@ -199,7 +211,7 @@ export default React.createClass({
       if (response.status === 200) {
         response.json().then(images => {
           this.setState({
-            images: images
+            images: images.map(image => Object.assign(image, {selected: false}))
           })
         })
       }
@@ -230,6 +242,7 @@ export default React.createClass({
               {
                 setUser: this.setUser,
                 handleUpload: this.handleUpload,
+                toggleImageSelect: this.toggleImageSelect,
                 updateApiKeys: this.updateApiKeys,
                 updateCollections: this.updateCollections,
                 updateImages: this.updateImages,
