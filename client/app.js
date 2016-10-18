@@ -18,7 +18,8 @@ export default React.createClass({
         this.setState(previousState => {
           const uploads = Object.assign({}, previousState.uploads)
           uploads[image.s3_key] = Object.assign(uploads[image.s3_key], {
-            message: 'Thumbnails created.'
+            message: 'Thumbnails created.',
+            state: 'done'
           })
         })
       }
@@ -41,6 +42,7 @@ export default React.createClass({
           uploads[key] = {
             filename: file.name,
             message: 'Waiting to upload.',
+            state: 'wait',
             loaded: 0,
             total: file.size
           }
@@ -53,6 +55,7 @@ export default React.createClass({
               uploads[key] = {
                 filename: file.name,
                 message: 'Uploading.',
+                state: 'upload',
                 loaded: event.loaded,
                 total: event.total
               }
@@ -66,6 +69,7 @@ export default React.createClass({
             uploads[key] = {
               filename: (<a href={`${post.url}${key}`} target='_blank'>{file.name}</a>),
               message: 'Creating thumbnails.',
+              state: 'thumb',
               loaded: file.size,
               total: file.size
             }
@@ -79,6 +83,7 @@ export default React.createClass({
             uploads[key] = {
               filename: file.name,
               message: 'Error uploading file.',
+              state: 'error',
               loaded: 0,
               total: file.size
             }
@@ -91,6 +96,7 @@ export default React.createClass({
             uploads[key] = {
               filename: file.name,
               message: 'Upload aborted.',
+              state: 'abort',
               loaded: 0,
               total: file.size
             }

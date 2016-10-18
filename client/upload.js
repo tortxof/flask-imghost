@@ -31,6 +31,12 @@ export default React.createClass({
     e.target.value = ''
   },
   render() {
+    const num_uploads = Object.keys(this.props.uploads).length
+    const num_done = Object.keys(this.props.uploads).filter(key => this.props.uploads[key].state === 'done').length
+    const num_wait = Object.keys(this.props.uploads).filter(key => this.props.uploads[key].state === 'wait').length
+    const num_upload = Object.keys(this.props.uploads).filter(key => this.props.uploads[key].state === 'upload').length
+    const num_thumb = Object.keys(this.props.uploads).filter(key => this.props.uploads[key].state === 'thumb').length
+    const num_fail = Object.keys(this.props.uploads).filter(key => this.props.uploads[key].state === 'abort' || this.props.uploads[key].state === 'error').length
     const uploads = Object.keys(this.props.uploads).reverse().map(key => {
       return (
         <FileUpload
@@ -45,6 +51,12 @@ export default React.createClass({
     return (
       <div>
         <input type='file' name='file' onChange={this.handleChange} multiple />
+        <div>Waiting: {num_wait}</div>
+        <div>Uploading: {num_upload}</div>
+        <div>Creating thumbnails: {num_thumb}</div>
+        <div>Done: {num_done}</div>
+        <div>Failed: {num_fail}</div>
+        <div>Total: {num_uploads}</div>
         <div className='uploads'>
           {uploads}
         </div>
