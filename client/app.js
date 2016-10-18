@@ -15,7 +15,12 @@ export default React.createClass({
     })
     .then(response => {
       if (response.status >= 200 && response.status < 300) {
-        console.log('added', image)
+        this.setState(previousState => {
+          const uploads = Object.assign({}, previousState.uploads)
+          uploads[image.s3_key] = Object.assign(uploads[image.s3_key], {
+            message: 'Thumbnails created.'
+          })
+        })
       }
     })
   },
@@ -31,13 +36,23 @@ export default React.createClass({
         formData.set('Content-Type', file.type)
         formData.set('file', file)
         const xhr = new XMLHttpRequest()
+        this.setState(previousState => {
+          const uploads = Object.assign({}, previousState.uploads)
+          uploads[key] = {
+            filename: file.name,
+            message: 'Waiting to upload.',
+            loaded: 0,
+            total: file.size
+          }
+          return {uploads: uploads}
+        })
         xhr.upload.addEventListener('progress', event => {
           if (event.lengthComputable) {
             this.setState(previousState => {
               const uploads = Object.assign({}, previousState.uploads)
               uploads[key] = {
                 filename: file.name,
-                message: 'Uploading...',
+                message: 'Uploading.',
                 loaded: event.loaded,
                 total: event.total
               }
@@ -50,7 +65,7 @@ export default React.createClass({
             const uploads = Object.assign({}, previousState.uploads)
             uploads[key] = {
               filename: (<a href={`${post.url}${key}`} target='_blank'>{file.name}</a>),
-              message: 'Upload complete.',
+              message: 'Creating thumbnails.',
               loaded: file.size,
               total: file.size
             }
