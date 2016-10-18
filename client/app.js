@@ -66,22 +66,24 @@ export default React.createClass({
   },
   render() {
     return (
-      <div>
+      <div className='app-container'>
         <Nav user={this.state.user} />
-        {
-          React.cloneElement(
-            this.props.children,
-            {
-              setApiKey: this.setApiKey,
-              setUser: this.setUser,
-              updateApiKeys: this.updateApiKeys,
-              updateCollections: this.updateCollections,
-              apiKeys: this.state.apiKeys,
-              apiKey: this.state.apiKey,
-              collections: this.state.collections
-            }
-          )
-        }
+        <div className='app-content'>
+          {
+            React.cloneElement(
+              this.props.children,
+              {
+                setApiKey: this.setApiKey,
+                setUser: this.setUser,
+                updateApiKeys: this.updateApiKeys,
+                updateCollections: this.updateCollections,
+                apiKeys: this.state.apiKeys,
+                apiKey: this.state.apiKey,
+                collections: this.state.collections
+              }
+            )
+          }
+        </div>
       </div>
     )
   }
