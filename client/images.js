@@ -64,7 +64,7 @@ const CollectionSelect = React.createClass({
             handleChange={this.handleChange}
           />
         ))}
-        <button>Add to collection</button>
+        <button onClick={() => this.props.addImagesToCollection(this.state.collection)}>Add to collection</button>
       </div>
     )
   }
@@ -89,6 +89,7 @@ export default React.createClass({
         <CollectionSelect
           collections={this.props.collections}
           images={this.props.images}
+          addImagesToCollection={this.props.addImagesToCollection}
         />
         <div className='images'>
           {images}

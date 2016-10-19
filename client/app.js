@@ -37,6 +37,20 @@ export default React.createClass({
       images: images
     })
   },
+  addImagesToCollection(collection) {
+    const images = this.state.images.filter(image => image.selected)
+    images.forEach(image => {
+      const uri = `/api/collections/${collection}/images/${image.s3_key}`
+      fetch(uri, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        method: 'PUT'
+      })
+    })
+  },
   handleUpload(file) {
     fetch('/api/signed-post', {credentials: 'same-origin'})
     .then(response => {
@@ -246,6 +260,7 @@ export default React.createClass({
                 setUser: this.setUser,
                 handleUpload: this.handleUpload,
                 toggleImageSelect: this.toggleImageSelect,
+                addImagesToCollection: this.addImagesToCollection,
                 updateApiKeys: this.updateApiKeys,
                 updateCollections: this.updateCollections,
                 updateImages: this.updateImages,
