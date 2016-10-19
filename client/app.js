@@ -51,6 +51,19 @@ export default React.createClass({
       })
     })
   },
+  removeImagesFromCollection(images, collection) {
+    return images.map(image => {
+      const uri = `/api/collections/${collection}/images/${image.s3_key}`
+      return fetch(uri, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        method: 'DELETE'
+      })
+    })
+  },
   handleUpload(file) {
     fetch('/api/signed-post', {credentials: 'same-origin'})
     .then(response => {
@@ -261,6 +274,7 @@ export default React.createClass({
                 handleUpload: this.handleUpload,
                 toggleImageSelect: this.toggleImageSelect,
                 addImagesToCollection: this.addImagesToCollection,
+                removeImagesFromCollection: this.removeImagesFromCollection,
                 updateApiKeys: this.updateApiKeys,
                 updateCollections: this.updateCollections,
                 updateImages: this.updateImages,
