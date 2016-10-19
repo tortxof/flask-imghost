@@ -173,12 +173,14 @@ def create_thumbnails(image):
 
 @app.route('/login')
 @app.route('/create-account')
+@app.route('/collections/<path:path>')
 @app.route('/collections')
+@app.route('/images/<path:path>')
 @app.route('/images')
 @app.route('/upload')
 @app.route('/api-keys')
 @app.route('/')
-def index():
+def index(path=''):
     return render_template('react-client.html')
 
 @app.route('/logout')
