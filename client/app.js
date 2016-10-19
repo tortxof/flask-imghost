@@ -27,12 +27,47 @@ export default React.createClass({
   },
   toggleImageSelect(e) {
     const key = e.target.dataset.key
-    const images = this.state.images.map(image => {
-      if (image.s3_key === key) {
-        image.selected = !image.selected
-      }
-      return image
-    })
+    let images
+    if (e.shiftKey) {
+      const idxTo = this.state.images.reduce((prev, curr, i) => {
+        if (curr.s3_key === key) {
+          return prev.concat(i)
+        } else {
+          return prev
+        }
+      }, [])[0]
+      const keyFrom = this.state.images.slice(0, idxTo + 1)
+      .reverse()
+      .reduce((prev, curr, i) => {
+        if (curr.selected) {
+          return prev.concat(curr.s3_key)
+        } else {
+          return prev
+        }
+      }, [])[0]
+      const idxFrom = this.state.images.reduce((prev, curr, i) => {
+        if (curr.s3_key === keyFrom) {
+          return prev.concat(i)
+        } else {
+          return prev
+        }
+      }, [])[0]
+      const keys = this.state.images.slice(idxFrom + 1, idxTo + 1)
+      .map(image => image.s3_key)
+      images = this.state.images.map(image => {
+        if (keys.indexOf(image.s3_key) > -1) {
+          image = Object.assign({}, image, {selected: !image.selected})
+        }
+        return image
+      })
+    } else {
+      images = this.state.images.map(image => {
+        if (image.s3_key === key) {
+          image = Object.assign({}, image, {selected: !image.selected})
+        }
+        return image
+      })
+    }
     this.setState({
       images: images
     })
