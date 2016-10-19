@@ -4,7 +4,8 @@
 
 .image
   margin: 1em
-  border: 1px solid $cBorder
+  background-color: $cCardBackground
+  box-shadow: $shadowSmall
   padding: 1ch
   border-radius: 1ch
   width: 256px
@@ -18,7 +19,7 @@
     background-repeat: no-repeat
 
 .image.selected
-  background-color: mix(pink, $cBackground, 20%)
+  background-color: mix(#44f, $cCardBackground, 20%)
 
 .collection-select
   display: inline-block
