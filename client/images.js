@@ -22,9 +22,58 @@ const Image = ({
   </div>
 )
 
+const RadioInput = ({
+  collectionName,
+  selectedCollection,
+  handleChange
+}) => (
+  <div>
+    <input
+      className='collection-select'
+      type='radio'
+      name='collection'
+      value={collectionName}
+      checked={selectedCollection === collectionName}
+      onChange={handleChange}
+    />
+    {collectionName}
+  </div>
+)
+
+const CollectionSelect = React.createClass({
+  handleSubmit(e) {
+    e.preventDefault()
+    console.log(e.target)
+  },
+  handleChange(e) {
+    this.setState({
+      collection: e.target.value
+    })
+  },
+  getInitialState() {
+    return {collection: null}
+  },
+  render() {
+    return (
+      <div>
+        {this.props.collections.map(collection => (
+          <RadioInput
+            key={collection.name}
+            collectionName={collection.name}
+            selectedCollection={this.state.collection}
+            handleChange={this.handleChange}
+          />
+        ))}
+        <button>Add to collection</button>
+      </div>
+    )
+  }
+})
+
 export default React.createClass({
   componentDidMount() {
     this.props.updateImages()
+    this.props.updateCollections()
   },
   render() {
     const images = this.props.images.map(image => (
@@ -37,6 +86,10 @@ export default React.createClass({
     return (
       <div>
         <div>Images</div>
+        <CollectionSelect
+          collections={this.props.collections}
+          images={this.props.images}
+        />
         <div className='images'>
           {images}
         </div>
