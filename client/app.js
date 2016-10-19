@@ -140,6 +140,9 @@ export default React.createClass({
             this.setState({
               user: session.user
             })
+            this.updateApiKeys()
+            this.updateImages()
+            this.updateCollections()
           }
         })
       }
