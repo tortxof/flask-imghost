@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Image = ({
+export const Image = ({
   image,
   handleClick
 }) => (

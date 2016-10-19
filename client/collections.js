@@ -1,11 +1,12 @@
 import React from 'react'
+import {Link} from 'react-router'
 
 const Collection = ({
   collection,
   handleDelete
 }) => (
   <div className='collection'>
-    <div className='name'>{collection.name}</div>
+    <div className='name'><Link to={`/collections/${collection.name}`}>{collection.name}</Link></div>
     <button data-uri={collection.uri} onClick={handleDelete}>&times;</button>
   </div>
 )
