@@ -112,69 +112,65 @@ export default React.createClass({
         formData.set('file', file)
         const xhr = new XMLHttpRequest()
         this.setState(previousState => {
-          const uploads = Object.assign({}, previousState.uploads)
-          uploads[key] = {
+          const upload = {
             filename: file.name,
             message: 'Waiting to upload.',
             state: 'wait',
             loaded: 0,
             total: file.size
           }
-          return {uploads: uploads}
+          return {...previousState, uploads: {...previousState.uploads, [key]: upload}}
         })
         xhr.upload.addEventListener('progress', event => {
           if (event.lengthComputable) {
             this.setState(previousState => {
-              const uploads = Object.assign({}, previousState.uploads)
-              uploads[key] = {
-                filename: file.name,
+              const upload = {
+                ...previousState.uploads[key],
                 message: 'Uploading.',
                 state: 'upload',
                 loaded: event.loaded,
                 total: event.total
               }
-              return {uploads: uploads}
+              return {...previousState, uploads: {...previousState.uploads, [key]: upload}}
             })
           }
         })
         xhr.addEventListener('load', event => {
           this.setState(previousState => {
-            const uploads = Object.assign({}, previousState.uploads)
-            uploads[key] = {
+            const upload = {
+              ...previousState.uploads[key],
               filename: (<a href={`${post.url}${key}`} target='_blank'>{file.name}</a>),
               message: 'Creating thumbnails.',
               state: 'thumb',
               loaded: file.size,
               total: file.size
             }
-            return {uploads: uploads}
+            return {...previousState, uploads: {...previousState.uploads, [key]: upload}}
           })
           this.createImage({'s3_key': key})
         })
         xhr.addEventListener('error', event => {
           this.setState(previousState => {
-            const uploads = Object.assign({}, previousState.uploads)
-            uploads[key] = {
-              filename: file.name,
+            const upload = {
+              ...previousState.uploads[key],
               message: 'Error uploading file.',
               state: 'error',
               loaded: 0,
               total: file.size
             }
-            return {uploads: uploads}
+            return {...previousState, uploads: {...previousState.uploads, [key]: upload}}
           })
         })
         xhr.addEventListener('abort', event => {
           this.setState(previousState => {
-            const uploads = Object.assign({}, previousState.uploads)
-            uploads[key] = {
-              filename: file.name,
+            const upload = {
+              ...previousState.uploads[key],
               message: 'Upload aborted.',
               state: 'abort',
               loaded: 0,
               total: file.size
             }
-            return {uploads: uploads}
+            return {...previousState, uploads: {...previousState.uploads, [key]: upload}}
           })
         })
         xhr.open('POST', post.url, true)
