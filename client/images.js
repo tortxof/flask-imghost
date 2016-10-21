@@ -18,6 +18,11 @@ export const Image = ({
       style={{backgroundImage: `url(https://s3.amazonaws.com/${image.s3_bucket}/${image.s3_key.split('/')[0]}/t256/${image.s3_key.split('/').slice(1)})`}}
     >
     </div>
+    <div className='colors'>
+      {image.colors.map((color, i) => (
+        <div key={i} className='color' style={{backgroundColor: color}}></div>
+      ))}
+    </div>
     <button data-key={image.s3_key} onClick={handleClick}>Select</button>
   </div>
 )
