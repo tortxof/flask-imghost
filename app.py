@@ -512,6 +512,7 @@ class JSONField(fields.Raw):
 image_resource_fields = {
     's3_key': fields.String,
     's3_bucket': fields.String,
+    'url': fields.String(attribute=lambda x: gen_s3_url(x['s3_key'], x['s3_bucket'])),
     'user': fields.String(attribute='user.username'),
     'title': fields.String,
     'description': fields.String,
