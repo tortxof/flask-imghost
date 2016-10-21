@@ -52,6 +52,7 @@ def verify_password(username, password):
             )
         except models.User.DoesNotExist:
             session.pop('username', None)
+            return False
         g.user = user
         return True
     try:
