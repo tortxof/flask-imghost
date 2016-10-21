@@ -17,6 +17,7 @@ from playhouse.shortcuts import model_to_dict
 from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
 from PIL import Image as PImage
+from colorthief import ColorThief
 
 import models
 
@@ -144,7 +145,7 @@ def gen_s3_url(key, bucket):
         quote_plus(key, safe='/')
     )
 
-def create_thumbnails(image):
+def create_thumbnails(image, num_colors=9):
     s3 = get_s3_client()
     s3_object = s3.get_object(
         Bucket = image.s3_bucket,
@@ -152,6 +153,19 @@ def create_thumbnails(image):
     )
     s3_object_body = tempfile.SpooledTemporaryFile()
     s3_object_body.write(s3_object['Body'].read())
+    s3_object_body.seek(0)
+    color_thief = ColorThief(s3_object_body)
+    palette = color_thief.get_palette(color_count=num_colors+1)
+    palette = [
+        '#{r}{g}{b}'.format(
+            r=hex(r)[2:],
+            g=hex(g)[2:],
+            b=hex(b)[2:],
+        )
+        for r, g, b in palette
+    ]
+    image.colors = json.dumps(palette)
+    image.save()
     for size in THUMB_SIZES:
         s3_object_body.seek(0)
         pil_object = PImage.open(s3_object_body)
@@ -184,6 +198,13 @@ def create_thumbnails(image):
 @app.route('/')
 def index(path=''):
     return render_template('react-client.html')
+
+@app.route('/reprocess')
+def reprocess():
+    images = models.Image.select()
+    for image in images:
+        create_thumbnails(image)
+    return 'Done.'
 
 @app.route('/logout')
 def logout():
