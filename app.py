@@ -170,10 +170,16 @@ def create_thumbnails(image, num_colors=9):
     image.colors = json.dumps(palette)
     image.size = json.dumps(size)
     image.save()
+    thumbs_object = {}
     for size in THUMB_SIZES:
         s3_object_body.seek(0)
         pil_object = PImage.open(s3_object_body)
         pil_object.thumbnail((size, size))
+        thumb_image_size = pil_object.size
+        thumb_image_size = {
+            'width': thumb_image_size[0],
+            'height': thumb_image_size[1]
+        }
         thumb_file = tempfile.SpooledTemporaryFile()
         pil_object.save(thumb_file, format='JPEG', quality=60, optimize=True)
         thumb_file.seek(0)
@@ -190,6 +196,12 @@ def create_thumbnails(image, num_colors=9):
             ContentType = 'image/jpeg',
             Body = thumb_file.read(),
         )
+        thumbs_object[size] = {
+            'size': thumb_image_size,
+            'url': gen_s3_url(thumb_s3_key, image.s3_bucket)
+        }
+    image.thumbs = json.dumps(thumbs_object)
+    image.save()
 
 @app.route('/login')
 @app.route('/create-account')
@@ -520,6 +532,7 @@ image_resource_fields = {
     'uri': fields.Url('image'),
     'colors': JSONField(),
     'size': JSONField(),
+    'thumbs': JSONField(),
 }
 
 collection_images_resource_fields = {

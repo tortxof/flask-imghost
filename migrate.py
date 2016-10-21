@@ -19,3 +19,8 @@ if 'image' in generated_models:
             migrate(
                 migrator.add_column('image', 'size', models.Image.size)
             )
+    if 'thumbs' not in generated_models['image']._meta.fields.keys():
+        with models.database.transaction():
+            migrate(
+                migrator.add_column('image', 'thumbs', models.Image.thumbs)
+            )

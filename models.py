@@ -37,6 +37,7 @@ class Image(BaseModel):
     description = TextField(default='')
     colors = CharField(default='')
     size = CharField(default='')
+    thumbs = CharField(default='')
     date_created = DateTimeField()
 
     class Meta:
