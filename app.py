@@ -164,7 +164,11 @@ def create_thumbnails(image, num_colors=9):
         )
         for r, g, b in palette
     ]
+    s3_object_body.seek(0)
+    size = PImage.open(s3_object_body).size
+    size = {'width': size[0], 'height': size[1]}
     image.colors = json.dumps(palette)
+    image.size = json.dumps(size)
     image.save()
     for size in THUMB_SIZES:
         s3_object_body.seek(0)
@@ -513,7 +517,8 @@ image_resource_fields = {
     'description': fields.String,
     'date_created': fields.DateTime(dt_format='iso8601'),
     'uri': fields.Url('image'),
-    'colors': JSONField()
+    'colors': JSONField(),
+    'size': JSONField(),
 }
 
 collection_images_resource_fields = {
