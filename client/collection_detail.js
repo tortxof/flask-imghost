@@ -10,6 +10,10 @@ export default React.createClass({
     this.updateImages()
   },
   updateImages() {
+    if (!this.props.user) {
+      this.setState(this.getInitialState())
+      return
+    }
     const uri = `/api/collections/${this.props.params.name}`
     fetch(uri, {
       headers: {

@@ -309,6 +309,7 @@ export default React.createClass({
                 updateApiKeys: this.updateApiKeys,
                 updateCollections: this.updateCollections,
                 updateImages: this.updateImages,
+                user: this.state.user,
                 apiKeys: this.state.apiKeys,
                 collections: this.state.collections,
                 images: this.state.images,
