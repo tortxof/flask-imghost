@@ -8,14 +8,14 @@ export const Image = ({
     <div className='link'>
       <a
         target='_blank'
-        href={`https://s3.amazonaws.com/${image.s3_bucket}/${image.s3_key}`}
+        href={image.url}
       >
         {image.s3_key}
       </a>
     </div>
     <div
       className='thumb'
-      style={{backgroundImage: `url(https://s3.amazonaws.com/${image.s3_bucket}/${image.s3_key.split('/')[0]}/t256/${image.s3_key.split('/').slice(1)})`}}
+      style={{backgroundImage: `url(${image.thumbs['256'].url})`}}
     >
     </div>
     <div className='colors'>
