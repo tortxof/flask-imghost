@@ -35,6 +35,7 @@ class Image(BaseModel):
     s3_bucket = CharField()
     title = CharField(default='')
     description = TextField(default='')
+    colors = CharField(default='')
     date_created = DateTimeField()
 
     class Meta:
