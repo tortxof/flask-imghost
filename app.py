@@ -5,6 +5,7 @@ from functools import wraps
 import tempfile
 import hashlib
 from urllib.parse import quote_plus
+import json
 
 from flask import (
     Flask, render_template, request, g, session, redirect,
@@ -476,6 +477,13 @@ class CollectionList(Resource):
             )
         return model_to_dict(collection)
 
+class JSONField(fields.Raw):
+    def format(self, json_string):
+        try:
+            return json.loads(json_string)
+        except json.decoder.JSONDecodeError:
+            return None
+
 image_resource_fields = {
     's3_key': fields.String,
     's3_bucket': fields.String,
@@ -484,6 +492,7 @@ image_resource_fields = {
     'description': fields.String,
     'date_created': fields.DateTime(dt_format='iso8601'),
     'uri': fields.Url('image'),
+    'colors': JSONField()
 }
 
 collection_images_resource_fields = {
