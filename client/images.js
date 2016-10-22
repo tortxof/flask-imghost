@@ -13,10 +13,12 @@ export const Image = ({
         {image.s3_key}
       </a>
     </div>
-    <div
+    {if (image.thumbs) {
+      <div
       className='thumb'
       style={{backgroundImage: `url(${image.thumbs['256'].url})`}}
-    >
+      >
+    }}
     </div>
     <div className='colors'>
       {image.colors.map((color, i) => (
