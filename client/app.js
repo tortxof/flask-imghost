@@ -30,41 +30,25 @@ export default React.createClass({
     const key = e.target.dataset.key
     let images
     if (e.shiftKey) {
-      const idxTo = this.state.images.reduce((prev, curr, i) => {
-        if (curr.s3_key === key) {
-          return prev.concat(i)
-        } else {
-          return prev
-        }
-      }, [])[0]
-      const keyFrom = this.state.images.slice(0, idxTo + 1)
+      const idxTo = this.state.images.map(image => image.s3_key).indexOf(key)
+      const idxFrom = idxTo - this.state.images
+      .slice(0, idxTo + 1)
       .reverse()
-      .reduce((prev, curr, i) => {
-        if (curr.selected) {
-          return prev.concat(curr.s3_key)
-        } else {
-          return prev
-        }
-      }, [])[0]
-      const idxFrom = this.state.images.reduce((prev, curr, i) => {
-        if (curr.s3_key === keyFrom) {
-          return prev.concat(i)
-        } else {
-          return prev
-        }
-      }, [])[0]
-      const keys = this.state.images.slice(idxFrom + 1, idxTo + 1)
+      .map(image => image.selected)
+      .indexOf(true)
+      const keys = this.state.images
+      .slice(idxFrom + 1, idxTo + 1)
       .map(image => image.s3_key)
       images = this.state.images.map(image => {
-        if (keys.indexOf(image.s3_key) > -1) {
-          image = Object.assign({}, image, {selected: !image.selected})
+        if (_.includes(keys, image.s3_key)) {
+          image = {...image, selected: !image.selected}
         }
         return image
       })
     } else {
       images = this.state.images.map(image => {
         if (image.s3_key === key) {
-          image = Object.assign({}, image, {selected: !image.selected})
+          image = {...image, selected: !image.selected}
         }
         return image
       })
