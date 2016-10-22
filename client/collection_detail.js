@@ -7,58 +7,22 @@ export default React.createClass({
     return {collection: {images: []}}
   },
   componentDidMount() {
-    this.updateImages()
-  },
-  updateImages() {
-    if (!this.props.user) {
-      this.setState(this.getInitialState())
-      return
-    }
-    const uri = `/api/collections/${this.props.params.name}`
-    fetch(uri, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      credentials: 'same-origin'
-    })
-    .then(response => {
-      if (response.status === 200) {
-        response.json().then(collection => {
-          collection.images = collection.images.map(image => {
-            return Object.assign({}, image, {selected: false})
-          })
-          this.setState({
-            collection: collection
-          })
-        })
-      }
-    })
-  },
-  toggleImageSelect(e) {
-    const key = e.target.dataset.key
-    const images = this.state.collection.images.map(image => {
-      if (image.s3_key === key) {
-        image.selected = !image.selected
-      }
-      return image
-    })
-    this.setState({
-      collection: Object.assign({}, this.state.collection, {images: images})
-    })
+    this.props.updateImages(`/api/collections/${this.props.params.name}/images`)
+    this.setState({collection: {name: this.props.params.name}})
   },
   handleRemove() {
-    const images = this.state.collection.images.filter(image => image.selected)
+    const images = this.props.images.filter(image => image.selected)
     const collection = this.state.collection.name
     Promise.all(this.props.removeImagesFromCollection(images, collection))
-    .then(responses => {this.updateImages()})
+    .then(responses => {this.props.updateImages(`/api/collections/${this.props.params.name}/images`)})
   },
   render() {
-    const images = this.state.collection.images.map(image => (
+    const images = this.props.images.map((image, i) => (
       <Image
-        key={image.s3_key}
+        key={i}
+        index={i}
         image={image}
-        handleClick={this.toggleImageSelect}
+        handleClick={this.props.toggleImageSelect}
       />
     ))
     return (

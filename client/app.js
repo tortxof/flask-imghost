@@ -28,7 +28,6 @@ export default React.createClass({
   },
   toggleImageSelect(e) {
     const key = parseInt(e.target.dataset.key)
-    console.log(key)
     let images
     if (e.shiftKey) {
       const idxTo = key
@@ -184,7 +183,6 @@ export default React.createClass({
               user: session.user
             })
             this.updateApiKeys()
-            this.updateImages()
             this.updateCollections()
           }
         })
@@ -239,14 +237,15 @@ export default React.createClass({
       }
     })
   },
-  updateImages() {
+  updateImages(uri) {
     if (!this.state.user) {
       this.setState({
         images: []
       })
       return
     }
-    fetch('/api/images', {
+    uri = uri || '/api/images'
+    fetch(uri, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
