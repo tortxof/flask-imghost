@@ -32,7 +32,7 @@ export const Image = ({
           target='_blank'
           href={image.url}
         >
-          {image.s3_key}
+          {image.s3_key.split('/').slice(1).join('')}
         </a>
       </div>
       {image.thumbs ?
