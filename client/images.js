@@ -1,34 +1,59 @@
 import React from 'react'
+import _ from 'lodash'
 
 export const Image = ({
   image,
   handleClick
-}) => (
-  <div className={'image' + (image.selected ? ' selected' : '')}>
-    <div className='link'>
-      <a
-        target='_blank'
-        href={image.url}
-      >
-        {image.s3_key}
-      </a>
+}) => {
+  let primary_color_brightness
+  if (image.colors) {
+    primary_color_brightness = _.chunk(
+      image.colors[0].split('').slice(1),
+      2
+    )
+    .map(color => color.join(''))
+    .map(color => parseInt(color, 16))
+    .reduce((p, c) => p + c)
+  }
+  let use_dark_text
+  if (image.colors && primary_color_brightness > 384) {
+    use_dark_text = true
+  } else {
+    use_dark_text = false
+  }
+  return (
+    <div
+      className={'image' + (image.selected ? ' selected' : '')}
+      style={image.colors ? {backgroundColor: image.colors[0]} : {}}
+    >
+      <div className='link'>
+        <a
+          className={use_dark_text ? 'dark' : ''}
+          target='_blank'
+          href={image.url}
+        >
+          {image.s3_key}
+        </a>
+      </div>
+      {image.thumbs ?
+        <div
+          className='thumb'
+          style={{
+            backgroundImage: `url(${image.thumbs['256'].url})`
+          }}
+        >
+        </div> :
+        null
+      }
+      <div className='colors'>
+        {image.colors ? image.colors.slice(1).map((color, i) => (
+          <div key={i} className='color' style={{backgroundColor: color}}></div>
+        )) : null}
+      </div>
+      <button data-key={image.s3_key} onClick={handleClick}>Select</button>
     </div>
-    {image.thumbs ?
-      <div
-        className='thumb'
-        style={{backgroundImage: `url(${image.thumbs['256'].url})`}}
-      >
-      </div> :
-      null
-    }
-    <div className='colors'>
-      {image.colors ? image.colors.map((color, i) => (
-        <div key={i} className='color' style={{backgroundColor: color}}></div>
-      )) : null}
-    </div>
-    <button data-key={image.s3_key} onClick={handleClick}>Select</button>
-  </div>
-)
+  )
+}
 
 const RadioInput = ({
   collectionName,

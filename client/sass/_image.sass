@@ -6,14 +6,20 @@
   margin: 1em
   background-color: $cCardBackground
   box-shadow: $shadowSmall
-  padding: 1ch
   border-radius: 1ch
-  width: 256px
+  width: 256px + ($imageThumbBorderSize * 2)
+  display: flex
+  flex-direction: column
   .link
+    padding: 1ch
     word-break: break-all
+    flex-grow: 1
+    .dark
+      color: $cTextDark
   .thumb
     width: 256px
     height: 256px
+    border: $imageThumbBorderSize solid transparent
     background-position: center center
     background-size: contain
     background-repeat: no-repeat
@@ -24,7 +30,10 @@
       flex-grow: 1
 
 .image.selected
-  background-color: mix(#44f, $cCardBackground, 20%)
+  box-shadow: 0 0 12px $cButtonSelected
+  button
+    background-color: $cButtonSelected
+    color: $cTextDark
 
 .collection-select
   display: inline-block
