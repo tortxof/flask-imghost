@@ -146,6 +146,8 @@ def gen_s3_url(key, bucket):
     )
 
 def create_thumbnails(image, num_colors=9):
+    if (image.s3_key.split('.')[-1] not in ('jpg', 'png')):
+        return
     s3 = get_s3_client()
     s3_object = s3.get_object(
         Bucket = image.s3_bucket,
@@ -215,7 +217,6 @@ def create_thumbnails(image, num_colors=9):
 def index(path=''):
     return render_template('react-client.html')
 
-@app.route('/reprocess')
 def reprocess():
     images = models.Image.select()
     for image in images:
