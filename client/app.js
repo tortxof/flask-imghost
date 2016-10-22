@@ -278,11 +278,15 @@ export default React.createClass({
                 selected: false,
                 bright: bright
               }
-            })
+            }),
+            imagesNeedUpdate: false
           })
         })
       }
     })
+  },
+  setImagesNeedUpdate() {
+    this.setState({imagesNeedUpdate: true})
   },
   componentDidMount() {
     this.getLoggedInUser()
@@ -294,6 +298,7 @@ export default React.createClass({
       collections: [],
       images: [],
       uploads: {},
+      imagesNeedUpdate: true,
       currentCollection: null,
       currentImage: null
     }
@@ -315,10 +320,12 @@ export default React.createClass({
                 updateApiKeys: this.updateApiKeys,
                 updateCollections: this.updateCollections,
                 updateImages: this.updateImages,
+                setImagesNeedUpdate: this.setImagesNeedUpdate,
                 user: this.state.user,
                 apiKeys: this.state.apiKeys,
                 collections: this.state.collections,
                 images: this.state.images,
+                imagesNeedUpdate: this.state.imagesNeedUpdate,
                 uploads: this.state.uploads
               }
             )

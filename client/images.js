@@ -85,8 +85,16 @@ const CollectionSelect = React.createClass({
 
 export default React.createClass({
   componentDidMount() {
-    this.props.updateImages()
-    this.props.updateCollections()
+    this.props.setImagesNeedUpdate()
+    const tryImages = () => {
+      if (!this.props.user) {
+        console.log('waiting')
+        setTimeout(tryImages, 1000)
+      } else {
+        this.props.updateImages()
+      }
+    }
+    tryImages()
   },
   render() {
     const images = this.props.images.map((image, i) => (
@@ -106,7 +114,7 @@ export default React.createClass({
           addImagesToCollection={this.props.addImagesToCollection}
         />
         <div className='images'>
-          {images}
+          {this.props.imagesNeedUpdate ? null : images}
         </div>
       </div>
     )

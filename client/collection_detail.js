@@ -7,8 +7,17 @@ export default React.createClass({
     return {collection: {images: []}}
   },
   componentDidMount() {
-    this.props.updateImages(`/api/collections/${this.props.params.name}/images`)
+    this.props.setImagesNeedUpdate()
     this.setState({collection: {name: this.props.params.name}})
+    const tryImages = () => {
+      if (!this.props.user) {
+        console.log('waiting')
+        setTimeout(tryImages, 1000)
+      } else {
+        this.props.updateImages(`/api/collections/${this.props.params.name}/images`)
+      }
+    }
+    tryImages()
   },
   handleRemove() {
     const images = this.props.images.filter(image => image.selected)
@@ -30,7 +39,7 @@ export default React.createClass({
         <div>Collection: {this.props.params.name}</div>
         <button onClick={this.handleRemove}>Remove from collection</button>
         <div className='images'>
-          {images}
+          {this.props.imagesNeedUpdate ? null : images}
         </div>
       </div>
     )
