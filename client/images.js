@@ -1,26 +1,9 @@
 import React from 'react'
-import _ from 'lodash'
 
 export const Image = ({
   image,
   handleClick
 }) => {
-  let primary_color_brightness
-  if (image.colors) {
-    primary_color_brightness = _.chunk(
-      image.colors[0].split('').slice(1),
-      2
-    )
-    .map(color => color.join(''))
-    .map(color => parseInt(color, 16))
-    .reduce((p, c) => p + c)
-  }
-  let use_dark_text
-  if (image.colors && primary_color_brightness > 384) {
-    use_dark_text = true
-  } else {
-    use_dark_text = false
-  }
   return (
     <div
       className={'image' + (image.selected ? ' selected' : '')}
@@ -28,7 +11,7 @@ export const Image = ({
     >
       <div className='link'>
         <a
-          className={use_dark_text ? 'dark' : ''}
+          className={image.bright ? 'dark' : ''}
           target='_blank'
           href={image.url}
         >

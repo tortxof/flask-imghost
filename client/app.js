@@ -1,4 +1,5 @@
 import React from 'react'
+import _ from 'lodash'
 
 import Nav from './nav'
 
@@ -272,7 +273,29 @@ export default React.createClass({
       if (response.status === 200) {
         response.json().then(images => {
           this.setState({
-            images: images.map(image => Object.assign(image, {selected: false}))
+            images: images.map(image => {
+              let primary_color_brightness
+              if (image.colors) {
+                primary_color_brightness = _.chunk(
+                  image.colors[0].split('').slice(1),
+                  2
+                )
+                .map(color => color.join(''))
+                .map(color => parseInt(color, 16))
+                .reduce((p, c) => p + c)
+              }
+              let bright
+              if (image.colors && primary_color_brightness > 384) {
+                bright = true
+              } else {
+                bright = false
+              }
+              return {
+                ...image,
+                selected: false,
+                bright: bright
+              }
+            })
           })
         })
       }
