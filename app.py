@@ -159,11 +159,7 @@ def create_thumbnails(image, num_colors=9):
     color_thief = ColorThief(s3_object_body)
     palette = color_thief.get_palette(color_count=num_colors+1)
     palette = [
-        '#{r}{g}{b}'.format(
-            r=hex(r)[2:],
-            g=hex(g)[2:],
-            b=hex(b)[2:],
-        )
+        '#{r:02x}{g:02x}{b:02x}'.format(r=r, g=g, b=b)
         for r, g, b in palette
     ]
     s3_object_body.seek(0)
