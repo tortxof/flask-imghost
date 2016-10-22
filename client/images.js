@@ -2,6 +2,7 @@ import React from 'react'
 
 export const Image = ({
   image,
+  index,
   handleClick
 }) => {
   return (
@@ -33,7 +34,7 @@ export const Image = ({
           <div key={i} className='color' style={{backgroundColor: color}}></div>
         )) : null}
       </div>
-      <button data-key={image.s3_key} onClick={handleClick}>Select</button>
+      <button data-key={index} onClick={handleClick}>Select</button>
     </div>
   )
 }
@@ -92,9 +93,10 @@ export default React.createClass({
     this.props.updateCollections()
   },
   render() {
-    const images = this.props.images.map(image => (
+    const images = this.props.images.map((image, i) => (
       <Image
-        key={image.s3_key}
+        key={i}
+        index={i}
         image={image}
         handleClick={this.props.toggleImageSelect}
       />

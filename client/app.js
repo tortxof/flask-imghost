@@ -27,10 +27,11 @@ export default React.createClass({
     })
   },
   toggleImageSelect(e) {
-    const key = e.target.dataset.key
+    const key = parseInt(e.target.dataset.key)
+    console.log(key)
     let images
     if (e.shiftKey) {
-      const idxTo = this.state.images.map(image => image.s3_key).indexOf(key)
+      const idxTo = key
       const idxFrom = idxTo - this.state.images
       .slice(0, idxTo + 1)
       .reverse()
@@ -46,12 +47,11 @@ export default React.createClass({
         return image
       })
     } else {
-      images = this.state.images.map(image => {
-        if (image.s3_key === key) {
-          image = {...image, selected: !image.selected}
-        }
-        return image
-      })
+      images = [
+        ...this.state.images.slice(0, key),
+        {...this.state.images[key], selected: !this.state.images[key].selected},
+        ...this.state.images.slice(key+1, this.state.images.length)
+      ]
     }
     this.setState({
       images: images
