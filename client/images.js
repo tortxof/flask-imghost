@@ -22,9 +22,9 @@ export const Image = ({
       null
     }
     <div className='colors'>
-      {image.colors.map((color, i) => (
+      {image.colors ? image.colors.map((color, i) => (
         <div key={i} className='color' style={{backgroundColor: color}}></div>
-      ))}
+      )) : null}
     </div>
     <button data-key={image.s3_key} onClick={handleClick}>Select</button>
   </div>
