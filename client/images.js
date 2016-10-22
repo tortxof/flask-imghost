@@ -58,10 +58,6 @@ const RadioInput = ({
 )
 
 const CollectionSelect = React.createClass({
-  handleSubmit(e) {
-    e.preventDefault()
-    console.log(e.target)
-  },
   handleChange(e) {
     this.setState({
       collection: e.target.value
