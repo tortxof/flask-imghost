@@ -265,10 +265,10 @@ export default React.createClass({
                 )
                 .map(color => color.join(''))
                 .map(color => parseInt(color, 16))
-                .reduce((p, c) => p + c)
+                .reduce((p, c, i) => p + c * [0.2126, 0.7152, 0.0722][i], 0)
               }
               let bright
-              if (image.colors && primary_color_brightness > 384) {
+              if (image.colors && primary_color_brightness > 128) {
                 bright = true
               } else {
                 bright = false
