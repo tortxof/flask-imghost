@@ -54,9 +54,8 @@ export default React.createClass({
         <div>Waiting: {num_wait}</div>
         <div>Uploading: {num_upload}</div>
         <div>Creating thumbnails: {num_thumb}</div>
-        <div>Done: {num_done}</div>
         <div>Failed: {num_fail}</div>
-        <div>Total: {num_uploads}</div>
+        <div>Done: <progress value={num_done} max={num_uploads}></progress> {num_done} of {num_uploads}</div>
         <div className='uploads'>
           {uploads}
         </div>
