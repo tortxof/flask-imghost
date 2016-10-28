@@ -27,11 +27,13 @@ export default React.createClass({
     })
   },
   updateImage(image) {
+    console.log('updateImage', image)
     fetch(image.uri, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
+      credentials: 'same-origin',
       method: 'PUT',
       body: JSON.stringify({
         title: image.title,
@@ -348,6 +350,7 @@ export default React.createClass({
                 updateApiKeys: this.updateApiKeys,
                 updateCollections: this.updateCollections,
                 updateImages: this.updateImages,
+                updateImage: this.updateImage,
                 setImagesNeedUpdate: this.setImagesNeedUpdate,
                 user: this.state.user,
                 apiKeys: this.state.apiKeys,

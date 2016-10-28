@@ -1,45 +1,70 @@
 import React from 'react'
+import _ from 'lodash'
 
-export const Image = ({
-  image,
-  index,
-  handleClick
-}) => {
-  return (
-    <div
-      className={'image' + (image.selected ? ' selected' : '')}
-      style={image.colors ? {backgroundColor: image.colors[0]} : {}}
-    >
-      <div className='link'>
-        <a
-          className={image.bright ? 'dark' : ''}
-          target='_blank'
-          href={image.url}
-        >
-          {image.s3_key.split('/').slice(1).join('')}
-        </a>
+export const Image = React.createClass({
+  getInitialState() {
+    return {
+      title: this.props.image.title,
+      description: this.props.image.description
+    }
+  },
+  handleTitleChange(e) {
+    this.setState({
+      title: e.target.value
+    })
+    this.props.updateImage({
+      uri: this.props.image.uri,
+      title: e.target.value,
+      description: this.state.description
+    })
+  },
+  handleDescriptionChange(e) {
+    this.setState({
+      description: e.target.value
+    })
+    this.props.updateImage({
+      uri: this.props.image.uri,
+      title: this.state.title,
+      description: e.target.value
+    })
+  },
+  render() {
+    return (
+      <div
+        className={'image' + (this.props.image.selected ? ' selected' : '')}
+        style={this.props.image.colors ? {backgroundColor: this.props.image.colors[0]} : {}}
+      >
+        <div className='link'>
+          <a
+            className={this.props.image.bright ? 'dark' : ''}
+            target='_blank'
+            href={this.props.image.url}
+          >
+            {this.props.image.s3_key.split('/').slice(1).join('')}
+          </a>
+        </div>
+        {this.props.image.thumbs ?
+          <div
+            className='thumb'
+            style={{
+              backgroundImage: `url(${this.props.image.thumbs['256'].url})`
+            }}
+          >
+          </div> :
+          null
+        }
+        <input className='title' value={this.state.title} onChange={this.handleTitleChange} />
+        <input className='description' value={this.state.description} onChange={this.handleDescriptionChange} />
+        <div className='colors'>
+          {this.props.image.colors ? this.props.image.colors.slice(1).map((color, i) => (
+            <div key={i} className='color' style={{backgroundColor: color}}></div>
+          )) : null}
+        </div>
+        <button data-key={this.props.index} onClick={this.props.handleClick}>Select</button>
       </div>
-      {image.thumbs ?
-        <div
-          className='thumb'
-          style={{
-            backgroundImage: `url(${image.thumbs['256'].url})`
-          }}
-        >
-        </div> :
-        null
-      }
-      <div className='title'>{image.title}</div>
-      <div className='description'>{image.description}</div>
-      <div className='colors'>
-        {image.colors ? image.colors.slice(1).map((color, i) => (
-          <div key={i} className='color' style={{backgroundColor: color}}></div>
-        )) : null}
-      </div>
-      <button data-key={index} onClick={handleClick}>Select</button>
-    </div>
-  )
-}
+    )
+  }
+})
 
 const RadioInput = ({
   collectionName,
@@ -105,6 +130,7 @@ export default React.createClass({
         index={i}
         image={image}
         handleClick={this.props.toggleImageSelect}
+        updateImage={_.debounce(this.props.updateImage, 3000)}
       />
     ))
     return (
