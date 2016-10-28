@@ -26,6 +26,24 @@ export default React.createClass({
       }
     })
   },
+  updateImage(image) {
+    fetch(image.uri, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      method: 'PUT',
+      body: JSON.stringify({
+        title: image.title,
+        description: image.description
+      })
+    })
+    .then(response => {
+      if (response.status >= 200 && response.status < 300) {
+        this.updateImages()
+      }
+    })
+  },
   toggleImageSelect(e) {
     const key = parseInt(e.target.dataset.key)
     let images
