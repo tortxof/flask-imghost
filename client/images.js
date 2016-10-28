@@ -31,12 +31,15 @@ export const Image = React.createClass({
   render() {
     return (
       <div
-        className={'image' + (this.props.image.selected ? ' selected' : '')}
+        className={
+          'image' +
+          (this.props.image.selected ? ' selected' : '') +
+          (this.props.image.bright ? ' bright' : '')
+        }
         style={this.props.image.colors ? {backgroundColor: this.props.image.colors[0]} : {}}
       >
         <div className='link'>
           <a
-            className={this.props.image.bright ? 'dark' : ''}
             target='_blank'
             href={this.props.image.url}
           >
