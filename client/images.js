@@ -56,8 +56,8 @@ export const Image = React.createClass({
           </div> :
           null
         }
-        <input className='title' value={this.state.title} onChange={this.handleTitleChange} />
-        <input className='description' value={this.state.description} onChange={this.handleDescriptionChange} />
+        <input className='title' placeholder='Title' value={this.state.title} onChange={this.handleTitleChange} />
+        <input className='description' placeholder='Description' value={this.state.description} onChange={this.handleDescriptionChange} />
         <div className='colors'>
           {this.props.image.colors ? this.props.image.colors.slice(1).map((color, i) => (
             <div key={i} className='color' style={{backgroundColor: color}}></div>
