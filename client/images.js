@@ -29,6 +29,8 @@ export const Image = ({
         </div> :
         null
       }
+      <div className='title'>{image.title}</div>
+      <div className='description'>{image.description}</div>
       <div className='colors'>
         {image.colors ? image.colors.slice(1).map((color, i) => (
           <div key={i} className='color' style={{backgroundColor: color}}></div>
