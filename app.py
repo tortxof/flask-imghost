@@ -224,26 +224,6 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
 
-@app.route('/api/c/<collection_name>')
-def get_json_collection(collection_name):
-    collection = models.Collection.get(
-        models.Collection.name == collection_name,
-    )
-    return jsonify(
-        name = collection.name,
-        images = [
-            gen_image_dict(image)
-            for image in collection.images()
-        ]
-    ), 200, {'Access-Control-Allow-Origin': '*'}
-
-@app.route('/api/i/<path:s3_key>')
-def get_json_image(s3_key):
-    image = models.Image.get(models.Image.s3_key == s3_key)
-    return jsonify(
-        gen_image_dict(image)
-    ), 200, {'Access-Control-Allow-Origin': '*'}
-
 user_resource_fields = {
     'username': fields.String,
     'email': fields.String,
@@ -538,13 +518,11 @@ collection_images_resource_fields = {
 }
 
 class Collection(Resource):
-    @auth.login_required
     @marshal_with(collection_images_resource_fields)
     def get(self, name):
         try:
             collection = models.Collection.get(
                 models.Collection.name == name,
-                models.Collection.user == g.user,
             )
         except models.Collection.DoesNotExist:
             abort(
@@ -747,13 +725,11 @@ class ImageList(Resource):
         return model_to_dict(image)
 
 class Image(Resource):
-    @auth.login_required
     @marshal_with(image_resource_fields)
     def get(self, s3_key):
         try:
             image = models.Image.get(
                 models.Image.s3_key == s3_key,
-                models.Image.user == g.user,
             )
         except models.Image.DoesNotExist:
             abort(
@@ -813,9 +789,9 @@ api.add_resource(User, '/api/users/<username>')
 api.add_resource(ApiKeyList, '/api/api-keys')
 api.add_resource(ApiKey, '/api/api-keys/<key>')
 api.add_resource(CollectionList, '/api/collections')
-api.add_resource(Collection, '/api/collections/<name>')
+api.add_resource(Collection, '/api/collections/<name>', '/api/c/<name>')
 api.add_resource(ImageList, '/api/images')
-api.add_resource(Image, '/api/images/<path:s3_key>')
+api.add_resource(Image, '/api/images/<path:s3_key>', '/api/i/<path:s3_key>')
 api.add_resource(CollectionImageList, '/api/collections/<name>/images')
 api.add_resource(CollectionImage, '/api/collections/<name>/images/<path:s3_key>')
 
