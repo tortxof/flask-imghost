@@ -27,7 +27,6 @@ export default React.createClass({
     })
   },
   updateImage(image) {
-    console.log('updateImage', image)
     fetch(image.uri, {
       headers: {
         'Accept': 'application/json',
@@ -267,15 +266,14 @@ export default React.createClass({
       }
     })
   },
-  updateImages(uri) {
+  updateImages() {
     if (!this.state.user) {
       this.setState({
         images: []
       })
       return
     }
-    uri = uri || '/api/images'
-    fetch(uri, {
+    fetch(this.state.imagesUri, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -318,6 +316,14 @@ export default React.createClass({
   setImagesNeedUpdate() {
     this.setState({imagesNeedUpdate: true})
   },
+  setImagesUri(uri, callback) {
+    this.setState(
+      {
+        imagesUri: uri
+      },
+      callback
+    )
+  },
   componentDidMount() {
     this.getLoggedInUser()
   },
@@ -327,6 +333,7 @@ export default React.createClass({
       apiKeys: [],
       collections: [],
       images: [],
+      imagesUri: '/api/images',
       uploads: {},
       imagesNeedUpdate: true,
       currentCollection: null,
@@ -351,6 +358,7 @@ export default React.createClass({
                 updateCollections: this.updateCollections,
                 updateImages: this.updateImages,
                 updateImage: this.updateImage,
+                setImagesUri: this.setImagesUri,
                 setImagesNeedUpdate: this.setImagesNeedUpdate,
                 user: this.state.user,
                 apiKeys: this.state.apiKeys,

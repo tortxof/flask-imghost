@@ -9,24 +9,32 @@ export const Image = React.createClass({
     }
   },
   handleTitleChange(e) {
-    this.setState({
-      title: e.target.value
-    })
-    this.props.updateImage({
-      uri: this.props.image.uri,
-      title: e.target.value,
-      description: this.state.description
-    })
+    this.setState(
+      {
+        title: e.target.value
+      },
+      () => {
+        this.props.updateImage({
+          uri: this.props.image.uri,
+          title: this.state.title,
+          description: this.state.description
+        })
+      }
+    )
   },
   handleDescriptionChange(e) {
-    this.setState({
-      description: e.target.value
-    })
-    this.props.updateImage({
-      uri: this.props.image.uri,
-      title: this.state.title,
-      description: e.target.value
-    })
+    this.setState(
+      {
+        description: e.target.value
+      },
+      () => {
+        this.props.updateImage({
+          uri: this.props.image.uri,
+          title: this.state.title,
+          description: this.state.description
+        })
+      }
+    )
   },
   render() {
     return (
@@ -116,20 +124,24 @@ const CollectionSelect = React.createClass({
 export default React.createClass({
   componentDidMount() {
     this.props.setImagesNeedUpdate()
-    const tryImages = () => {
-      if (!this.props.user) {
-        console.log('waiting')
-        setTimeout(tryImages, 1000)
-      } else {
-        this.props.updateImages()
+    this.props.setImagesUri(
+      '/api/images',
+      () => {
+        const tryImages = () => {
+          if (!this.props.user) {
+            setTimeout(tryImages, 1000)
+          } else {
+            this.props.updateImages()
+          }
+        }
+        tryImages()
       }
-    }
-    tryImages()
+    )
   },
   render() {
     const images = this.props.images.map((image, i) => (
       <Image
-        key={i}
+        key={image.s3_key}
         index={i}
         image={image}
         handleClick={this.props.toggleImageSelect}

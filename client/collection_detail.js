@@ -1,37 +1,39 @@
 import React from 'react'
+import _ from 'lodash'
 
 import {Image} from './images'
 
 export default React.createClass({
-  getInitialState() {
-    return {collection: {images: []}}
-  },
   componentDidMount() {
     this.props.setImagesNeedUpdate()
-    this.setState({collection: {name: this.props.params.name}})
-    const tryImages = () => {
-      if (!this.props.user) {
-        console.log('waiting')
-        setTimeout(tryImages, 1000)
-      } else {
-        this.props.updateImages(`/api/collections/${this.props.params.name}/images`)
+    this.props.setImagesUri(
+      `/api/collections/${this.props.params.name}/images`,
+      () => {
+        const tryImages = () => {
+          if (!this.props.user) {
+            setTimeout(tryImages, 1000)
+          } else {
+            this.props.updateImages()
+          }
+        }
+        tryImages()
       }
-    }
-    tryImages()
+    )
   },
   handleRemove() {
     const images = this.props.images.filter(image => image.selected)
-    const collection = this.state.collection.name
+    const collection = this.props.params.name
     Promise.all(this.props.removeImagesFromCollection(images, collection))
-    .then(responses => {this.props.updateImages(`/api/collections/${this.props.params.name}/images`)})
+    .then(responses => {this.props.updateImages()})
   },
   render() {
     const images = this.props.images.map((image, i) => (
       <Image
-        key={i}
+        key={image.s3_key}
         index={i}
         image={image}
         handleClick={this.props.toggleImageSelect}
+        updateImage={_.debounce(this.props.updateImage, 3000)}
       />
     ))
     return (
