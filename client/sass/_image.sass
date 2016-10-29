@@ -15,6 +15,9 @@
     padding: 1ch
     word-break: break-all
     flex-grow: 1
+  label
+    margin: 1em
+    font-size: .8em
   input
     border: 0
     border-radius: 0
@@ -22,7 +25,9 @@
     border-bottom-color: $cText
     border-bottom-style: solid
     padding: 0
-    margin: 1em
+    margin: .5em 0 0 0
+    width: 100%
+    font-size: 1rem
   .thumb
     width: 256px
     height: 256px
@@ -43,7 +48,7 @@
     color: $cTextDark
 
 .image.bright
-  input, .link a
+  input, .link a, label
     color: $cTextDark
   input
     border-bottom-color: $cTextDark
