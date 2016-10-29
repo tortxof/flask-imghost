@@ -534,7 +534,7 @@ class Collection(Resource):
             **model_to_dict(collection),
             'images': images,
             }
-        return collection
+        return collection, {'Access-Control-Allow-Origin': '*'}
 
     @auth.login_required
     @marshal_with(collection_resource_fields)
@@ -736,7 +736,7 @@ class Image(Resource):
                 404,
                 message = 'Image with s3_key {0} does not exist.'.format(s3_key)
             )
-        return model_to_dict(image)
+        return model_to_dict(image), {'Access-Control-Allow-Origin': '*'}
 
     @auth.login_required
     @marshal_with(image_resource_fields)
