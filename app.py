@@ -146,7 +146,7 @@ def gen_s3_url(key, bucket):
     )
 
 def create_thumbnails(image, num_colors=9):
-    if (image.s3_key.split('.')[-1] not in ('jpg', 'png')):
+    if (image.s3_key.split('.')[-1].lower() not in ('jpg', 'jpeg', 'png')):
         return
     s3 = get_s3_client()
     s3_object = s3.get_object(
