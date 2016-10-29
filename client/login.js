@@ -13,19 +13,24 @@ export default React.createClass({
   },
   handleSubmit(e) {
     e.preventDefault()
-    const auth_string = btoa(`${this.state.username}:${this.state.password}`)
-    fetch('/api/users', {
+    fetch('/api/session', {
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${auth_string}`
+        'Content-Type': 'application/json'
       },
-      credentials: 'same-origin'
+      credentials: 'same-origin',
+      method: 'POST',
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password
+      })
     })
     .then(response => {
       if (response.status === 200) {
-        response.json().then(users => {
-          this.props.setUser(users[0])
+        response.json().then(session => {
+          if (session.loggedIn) {
+            this.props.setUser(session.user)
+          }
         })
       }
     })

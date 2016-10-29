@@ -236,13 +236,16 @@ class SignedPost(Resource):
     def get(self):
         return gen_signed_post(get_s3_client())
 
+session_resource_fields = {
+    'user': fields.Nested(user_resource_fields, allow_null=True),
+    'loggedIn': fields.Boolean(),
+}
+
+not_logged_in_response = {'loggedIn': False, 'user': None}
+
 class Session(Resource):
-    @marshal_with({
-        'user': fields.Nested(user_resource_fields, allow_null=True),
-        'loggedIn': fields.Boolean(),
-        })
+    @marshal_with(session_resource_fields)
     def get(self):
-        not_logged_in_response = {'loggedIn': False, 'user': None}
         if 'username' in session:
             try:
                 user = models.User.get(models.User.username == session.get('username'))
@@ -250,6 +253,22 @@ class Session(Resource):
                 return not_logged_in_response
             return {'loggedIn': True, 'user': model_to_dict(user)}
         return not_logged_in_response
+
+    @marshal_with(session_resource_fields)
+    def post(self):
+        session.pop('username', None)
+        if request.is_json:
+            username = request.get_json().get('username')
+            password = request.get_json().get('password')
+        else:
+            abort(
+                400,
+                message = 'Request must be of type application/json.',
+            )
+        if verify_password(username, password):
+            return {'loggedIn': True, 'user': model_to_dict(g.user)}
+        else:
+            return not_logged_in_response
 
 class UserList(Resource):
     @auth.login_required
