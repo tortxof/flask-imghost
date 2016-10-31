@@ -105,6 +105,11 @@ export default React.createClass({
       })
     })
   },
+  clearFinishedUploads() {
+    this.setState({
+      uploads: _.pickBy(this.state.uploads, upload => upload.state !== 'done')
+    })
+  },
   handleUpload(file) {
     fetch('/api/signed-post', {credentials: 'same-origin'})
     .then(response => {
@@ -363,6 +368,7 @@ export default React.createClass({
                 updateImage: this.updateImage,
                 setImagesUri: this.setImagesUri,
                 setImagesNeedUpdate: this.setImagesNeedUpdate,
+                clearFinishedUploads: this.clearFinishedUploads,
                 user: this.state.user,
                 apiKeys: this.state.apiKeys,
                 collections: this.state.collections,
