@@ -66,7 +66,12 @@ export const Image = React.createClass({
           null
         }
         <div className='dimensions'>
-          {this.props.image.size.width} &times; {this.props.image.size.height}
+          {
+            this.props.image.size ?
+            <div>{this.props.image.size.width} &times; {this.props.image.size.height}</div>
+            :
+            null
+          }
         </div>
         <div className='date-created'>
           {moment.utc(this.props.image.date_created).fromNow()}
