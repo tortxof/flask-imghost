@@ -71,13 +71,21 @@ export const Image = React.createClass({
         <div className='date-created'>
           {moment.utc(this.props.image.date_created).fromNow()}
         </div>
-        <label>
+        <label style={{textDecoration: (this.state.title !== this.props.image.title ? 'underline' : 'none')}}>
           Title
-          <input className='title' value={this.state.title} onChange={this.handleTitleChange} />
+          <input
+            className='title'
+            value={this.state.title}
+            onChange={this.handleTitleChange}
+          />
         </label>
-        <label>
+        <label style={{textDecoration: (this.state.description !== this.props.image.description ? 'underline' : 'none')}}>
           Description
-          <input className='description' value={this.state.description} onChange={this.handleDescriptionChange} />
+          <input
+            className='description'
+            value={this.state.description}
+            onChange={this.handleDescriptionChange}
+          />
         </label>
 
         <div className='colors'>
