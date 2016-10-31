@@ -45,7 +45,7 @@ export const Image = React.createClass({
           (this.props.image.selected ? ' selected' : '') +
           (this.props.image.bright ? ' bright' : '')
         }
-        style={this.props.image.colors ? {backgroundColor: this.props.image.colors[0]} : {}}
+        style={this.props.image.colors ? {backgroundColor: this.props.image.colors[0]} : null}
       >
         <div className='link'>
           <a
