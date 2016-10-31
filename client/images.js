@@ -1,4 +1,5 @@
 import React from 'react'
+import moment from 'moment'
 import _ from 'lodash'
 
 export const Image = React.createClass({
@@ -64,6 +65,12 @@ export const Image = React.createClass({
           </div> :
           null
         }
+        <div className='dimensions'>
+          {this.props.image.size.width} &times; {this.props.image.size.height}
+        </div>
+        <div className='date-created'>
+          {moment.utc(this.props.image.date_created).fromNow()}
+        </div>
         <label>
           Title
           <input className='title' value={this.state.title} onChange={this.handleTitleChange} />
