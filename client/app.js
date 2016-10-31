@@ -1,4 +1,5 @@
 import React from 'react'
+import moment from 'moment'
 import _ from 'lodash'
 
 import Nav from './nav'
@@ -312,7 +313,8 @@ export default React.createClass({
               return {
                 ...image,
                 selected: false,
-                bright: bright
+                bright: bright,
+                date_created: moment.utc(image.date_created).fromNow()
               }
             }),
             imagesNeedUpdate: false

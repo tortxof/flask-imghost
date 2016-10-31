@@ -1,5 +1,4 @@
 import React from 'react'
-import moment from 'moment'
 import _ from 'lodash'
 
 export const Image = React.createClass({
@@ -74,7 +73,7 @@ export const Image = React.createClass({
           }
         </div>
         <div className='date-created'>
-          {moment.utc(this.props.image.date_created).fromNow()}
+          {this.props.image.date_created}
         </div>
         <label style={{textDecoration: (this.state.title !== this.props.image.title ? 'underline' : 'none')}}>
           Title
