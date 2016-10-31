@@ -16,12 +16,15 @@ export default React.createClass({
     })
     .then(response => {
       if (response.status >= 200 && response.status < 300) {
-        this.setState(previousState => {
-          const uploads = Object.assign({}, previousState.uploads)
-          uploads[image.s3_key] = Object.assign(uploads[image.s3_key], {
-            message: 'Thumbnails created.',
-            state: 'done'
-          })
+        this.setState({
+          uploads: {
+            ...this.state.uploads,
+            [image.s3_key]: {
+              ...this.state.uploads[image.s3_key],
+              message: 'Thumbnails created.',
+              state: 'done'
+            }
+          }
         })
       }
     })
