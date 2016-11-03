@@ -2,6 +2,7 @@ flask
 flask-restful
 Flask-HTTPAuth
 peewee
+psycopg2
 boto3
 Pillow
 colorthief

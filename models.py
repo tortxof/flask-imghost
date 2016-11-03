@@ -1,14 +1,11 @@
 from peewee import (
-    SqliteDatabase, Model, ForeignKeyField, CharField, TextField,
+    PostgresqlDatabase, Model, ForeignKeyField, CharField, TextField,
     DateTimeField, IntegrityError
     )
 
-from playhouse.sqlite_ext import PrimaryKeyAutoIncrementField
-
-database = SqliteDatabase('/data/data.db')
+database = PostgresqlDatabase('postgres', user='postgres', password='1234', host='postgres')
 
 class BaseModel(Model):
-    id = PrimaryKeyAutoIncrementField()
     class Meta():
         database = database
 
