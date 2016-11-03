@@ -50,7 +50,7 @@ class Image(BaseModel):
 
 class ImageCollection(BaseModel):
     image = ForeignKeyField(Image)
-    collection = ForeignKeyField(Collection, index=True)
+    collection = ForeignKeyField(Collection)
 
     class Meta:
         indexes = (
