@@ -1,3 +1,5 @@
+import os
+
 from peewee import (
     PostgresqlDatabase, Model, ForeignKeyField, CharField, TextField,
     DateTimeField, IntegrityError
