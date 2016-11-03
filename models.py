@@ -3,7 +3,13 @@ from peewee import (
     DateTimeField, IntegrityError
     )
 
-database = PostgresqlDatabase('postgres', user='postgres', password='1234', host='postgres')
+database = PostgresqlDatabase(
+    os.environ.get('POSTGRES_DB', 'imghost'),
+    user = os.environ.get('POSTGRES_USER', 'postgres'),
+    password = os.environ.get('POSTGRES_PASSWORD', ''),
+    host = os.environ.get('POSTGRES_HOST', 'postgres'),
+    port = os.environ.get('POSTGRES_PORT', 5432),
+)
 
 class BaseModel(Model):
     class Meta():
@@ -42,7 +48,7 @@ class Image(BaseModel):
 
 class ImageCollection(BaseModel):
     image = ForeignKeyField(Image)
-    collection = ForeignKeyField(Collection)
+    collection = ForeignKeyField(Collection, index=True)
 
     class Meta:
         indexes = (
