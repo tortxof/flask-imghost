@@ -40,9 +40,9 @@ class Image(BaseModel):
     s3_bucket = CharField()
     title = CharField(default='')
     description = TextField(default='')
-    colors = CharField(default='')
-    size = CharField(default='')
-    thumbs = CharField(default='')
+    colors = TextField(default='')
+    size = TextField(default='')
+    thumbs = TextField(default='')
     date_created = DateTimeField()
 
     class Meta:
@@ -60,5 +60,5 @@ class ImageCollection(BaseModel):
 class ApiKey(BaseModel):
     key = CharField(unique=True)
     user = ForeignKeyField(User)
-    description = CharField(default='')
+    description = TextField(default='')
     date_created = DateTimeField()
