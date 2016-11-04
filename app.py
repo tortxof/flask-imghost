@@ -548,10 +548,19 @@ class Collection(Resource):
                 404,
                 message = 'A collection named {0} does not exist.'.format(name)
             )
-        images = [model_to_dict(image) for image in collection.images()]
+        images = (
+            models.Image
+            .select(models.Image, models.User)
+            .join(models.User)
+            .switch(models.Image)
+            .join(models.ImageCollection)
+            .where(models.ImageCollection.collection == collection)
+        )
         collection = {
             **model_to_dict(collection),
-            'images': images,
+            'images': [
+                model_to_dict(image) for image in images
+            ],
             }
         return collection, {'Access-Control-Allow-Origin': '*'}
 
@@ -585,7 +594,14 @@ class CollectionImageList(Resource):
                 404,
                 message = 'A collection named {0} does not exist.'.format(name)
             )
-        images = collection.images()
+        images = (
+            models.Image
+            .select(models.Image, models.User)
+            .join(models.User)
+            .switch(models.Image)
+            .join(models.ImageCollection)
+            .where(models.ImageCollection.collection == collection)
+        )
         return [model_to_dict(image) for image in images]
 
 class CollectionImage(Resource):
@@ -702,7 +718,12 @@ class ImageList(Resource):
     @auth.login_required
     @marshal_with(image_resource_fields)
     def get(self):
-        images = models.Image.select().where(models.Image.user == g.user)
+        images = (
+            models.Image
+            .select(models.Image, models.User)
+            .join(models.User)
+            .where(models.Image.user == g.user)
+        )
         return [model_to_dict(image) for image in images]
 
     @auth.login_required
