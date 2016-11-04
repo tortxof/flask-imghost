@@ -14,6 +14,8 @@ COPY . /app/
 
 USER docker
 
+ENV POSTGRES_PORT 5432
+
 EXPOSE 5000
 
 ENTRYPOINT ["dumb-init"]

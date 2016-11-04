@@ -10,7 +10,7 @@ database = PostgresqlDatabase(
     user = os.environ.get('POSTGRES_USER', 'postgres'),
     password = os.environ.get('POSTGRES_PASSWORD', ''),
     host = os.environ.get('POSTGRES_HOST', 'postgres'),
-    port = os.environ.get('POSTGRES_PORT', 5432),
+    port = int(os.environ.get('POSTGRES_PORT', 5432)),
 )
 
 class BaseModel(Model):
