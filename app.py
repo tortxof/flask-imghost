@@ -248,7 +248,9 @@ class Session(Resource):
     def get(self):
         if 'username' in session:
             try:
-                user = models.User.get(models.User.username == session.get('username'))
+                user = models.User.get(
+                    models.User.username == session.get('username')
+                )
             except models.User.DoesNotExist:
                 return not_logged_in_response
             return {'loggedIn': True, 'user': model_to_dict(user)}
@@ -520,7 +522,12 @@ class JSONField(fields.Raw):
 image_resource_fields = {
     's3_key': fields.String,
     's3_bucket': fields.String,
-    'url': fields.String(attribute=lambda x: gen_s3_url(x['s3_key'], x['s3_bucket'])),
+    'url': fields.String(
+        attribute = lambda image: gen_s3_url(
+            image['s3_key'],
+            image['s3_bucket']
+        )
+    ),
     'user': fields.String(attribute='user.username'),
     'title': fields.String,
     'description': fields.String,
@@ -833,7 +840,10 @@ api.add_resource(Collection, '/api/collections/<name>', '/api/c/<name>')
 api.add_resource(ImageList, '/api/images')
 api.add_resource(Image, '/api/images/<path:s3_key>', '/api/i/<path:s3_key>')
 api.add_resource(CollectionImageList, '/api/collections/<name>/images')
-api.add_resource(CollectionImage, '/api/collections/<name>/images/<path:s3_key>')
+api.add_resource(
+    CollectionImage,
+    '/api/collections/<name>/images/<path:s3_key>',
+)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
