@@ -5,7 +5,6 @@ import {Image} from './images'
 
 export default React.createClass({
   componentDidMount() {
-    this.props.setImagesNeedUpdate()
     this.props.setImagesUri(
       `/api/collections/${this.props.params.name}/images`,
       () => {
@@ -41,7 +40,7 @@ export default React.createClass({
         <div>Collection: {this.props.params.name}</div>
         <button onClick={this.handleRemove}>Remove from collection</button>
         <div className='images'>
-          {this.props.imagesNeedUpdate ? null : images}
+          {images}
         </div>
       </div>
     )

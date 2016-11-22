@@ -160,7 +160,6 @@ const CollectionSelect = React.createClass({
 
 export default React.createClass({
   componentDidMount() {
-    this.props.setImagesNeedUpdate()
     this.props.setImagesUri(
       '/api/images',
       () => {
@@ -194,7 +193,7 @@ export default React.createClass({
           addImagesToCollection={this.props.addImagesToCollection}
         />
         <div className='images'>
-          {this.props.imagesNeedUpdate ? null : images}
+          {images}
         </div>
       </div>
     )

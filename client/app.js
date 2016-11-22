@@ -316,20 +316,17 @@ export default React.createClass({
                 bright: bright,
                 date_created: moment.utc(image.date_created).fromNow()
               }
-            }),
-            imagesNeedUpdate: false
+            })
           })
         })
       }
     })
   },
-  setImagesNeedUpdate() {
-    this.setState({imagesNeedUpdate: true})
-  },
   setImagesUri(uri, callback) {
     this.setState(
       {
-        imagesUri: uri
+        imagesUri: uri,
+        images: []
       },
       callback
     )
@@ -345,7 +342,6 @@ export default React.createClass({
       images: [],
       imagesUri: '/api/images',
       uploads: {},
-      imagesNeedUpdate: true,
       currentCollection: null,
       currentImage: null
     }
@@ -369,13 +365,11 @@ export default React.createClass({
                 updateImages: this.updateImages,
                 updateImage: this.updateImage,
                 setImagesUri: this.setImagesUri,
-                setImagesNeedUpdate: this.setImagesNeedUpdate,
                 clearFinishedUploads: this.clearFinishedUploads,
                 user: this.state.user,
                 apiKeys: this.state.apiKeys,
                 collections: this.state.collections,
                 images: this.state.images,
-                imagesNeedUpdate: this.state.imagesNeedUpdate,
                 uploads: this.state.uploads
               }
             )
