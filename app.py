@@ -88,7 +88,7 @@ def after_request(request):
     g.database.close()
     return request
 
-def valid_collection_name(name):
+def valid_name(name):
     return (
         (set(name) <= set(string.ascii_letters + string.digits + '-_'))
         and len(name) >= 3
@@ -304,6 +304,11 @@ class UserList(Resource):
                 400,
                 message = 'Username, email, and password must all be provided.',
             )
+        if not valid_name(username):
+            abort(
+                400,
+                message = 'Bad username.',
+            )
         try:
             user = models.User.create(
                 username = username,
@@ -502,7 +507,7 @@ class CollectionList(Resource):
                 400,
                 message = 'Request must be of type application/json.',
             )
-        if not valid_collection_name(name):
+        if not valid_name(name):
             abort(
                 400,
                 message = 'Bad collection name.',
