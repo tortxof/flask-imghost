@@ -57,6 +57,7 @@ export default React.createClass({
             onChange={this.handleUsernameChange}
             value={this.state.username}
             placeholder='username'
+            autoFocus
           />
           <input
             type='email'
