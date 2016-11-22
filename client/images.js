@@ -44,7 +44,11 @@ export const Image = React.createClass({
           (this.props.image.selected ? ' selected' : '') +
           (this.props.image.bright ? ' bright' : '')
         }
-        style={this.props.image.colors ? {backgroundColor: this.props.image.colors[0]} : null}
+        style={
+          this.props.image.colors ?
+          {backgroundColor: this.props.image.colors[0]}
+          : null
+        }
       >
         <div className='link'>
           <a
@@ -54,22 +58,22 @@ export const Image = React.createClass({
             {this.props.image.s3_key.split('/').slice(1).join('')}
           </a>
         </div>
-        {this.props.image.thumbs ?
+        {
+          this.props.image.thumbs ?
           <div
             className='thumb'
             style={{
               backgroundImage: `url(${this.props.image.thumbs['256'].url})`
             }}
           >
-          </div> :
-          null
+          </div>
+          : null
         }
         <div className='dimensions'>
           {
             this.props.image.size ?
             <div>{this.props.image.size.width} &times; {this.props.image.size.height}</div>
-            :
-            null
+            : null
           }
         </div>
         <div className='date-created'>
@@ -93,9 +97,16 @@ export const Image = React.createClass({
         </label>
 
         <div className='colors'>
-          {this.props.image.colors ? this.props.image.colors.slice(1).map((color, i) => (
-            <div key={i} className='color' style={{backgroundColor: color}}></div>
-          )) : null}
+          {
+            this.props.image.colors ?
+            this.props.image.colors.slice(1)
+            .map(
+              (color, i) => (
+                <div key={i} className='color' style={{backgroundColor: color}}></div>
+              )
+            )
+            : null
+          }
         </div>
         <button data-key={this.props.index} onClick={this.props.handleClick}>Select</button>
       </div>
