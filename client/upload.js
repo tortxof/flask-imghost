@@ -51,7 +51,11 @@ export default React.createClass({
     return (
       <div>
         <input type='file' name='file' onChange={this.handleChange} multiple />
-        <button onClick={this.props.clearFinishedUploads}>Clear Finished Uploads</button>
+        {
+          num_done > 0 ?
+          <button onClick={this.props.clearFinishedUploads}>Clear Finished Uploads</button>
+          : null
+        }
         <div>Waiting: {num_wait}</div>
         <div>Uploading: {num_upload}</div>
         <div>Creating thumbnails: {num_thumb}</div>
