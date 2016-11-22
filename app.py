@@ -1,4 +1,5 @@
 import os
+import string
 import base64
 import datetime
 from functools import wraps
@@ -86,6 +87,12 @@ def before_request():
 def after_request(request):
     g.database.close()
     return request
+
+def valid_collection_name(name):
+    return (
+        (set(name) <= set(string.ascii_letters + string.digits + '-_'))
+        and len(name) >= 3
+    )
 
 THUMB_SIZES = (64, 128, 256, 512)
 
@@ -495,7 +502,7 @@ class CollectionList(Resource):
                 400,
                 message = 'Request must be of type application/json.',
             )
-        if not name:
+        if not valid_collection_name(name):
             abort(
                 400,
                 message = 'Bad collection name.',
