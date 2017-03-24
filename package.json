@@ -4,7 +4,7 @@
   "description": "A flask based image hosting service.",
   "main": "index.js",
   "scripts": {
-    "postinstall": "webpack -p",
+    "postinstall": "NODE_ENV=production webpack -p",
     "webpack-watch": "webpack -wd",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
