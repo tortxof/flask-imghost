@@ -6,11 +6,12 @@ from peewee import (
     )
 
 database = PostgresqlDatabase(
-    os.environ.get('POSTGRES_DB', 'imghost'),
-    user = os.environ.get('POSTGRES_USER', 'postgres'),
-    password = os.environ.get('POSTGRES_PASSWORD', ''),
-    host = os.environ.get('POSTGRES_HOST', 'postgres'),
-    port = int(os.environ.get('POSTGRES_PORT', 5432)),
+    os.environ.get('PG_NAME', 'imghost'),
+    user = os.environ.get('PG_USER', 'postgres'),
+    password = os.environ.get('PG_PASSWORD', ''),
+    host = os.environ.get('PG_HOST', 'postgres'),
+    port = int(os.environ.get('PG_PORT', 5432)),
+    register_hstore = False,
 )
 
 class BaseModel(Model):
