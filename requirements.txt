@@ -6,3 +6,4 @@ psycopg2
 boto3
 Pillow
 colorthief
+zappa
