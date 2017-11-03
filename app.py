@@ -43,8 +43,6 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 app.config['APP_URL'] = os.environ.get('APP_URL')
 app.config['S3_BUCKET'] = os.environ.get('S3_BUCKET')
-app.config['AWS_ACCESS_KEY_ID'] = os.environ.get('AWS_ACCESS_KEY_ID')
-app.config['AWS_SECRET_ACCESS_KEY'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
 @auth.verify_password
 def verify_password(username, password):
@@ -97,11 +95,7 @@ def valid_name(name):
 THUMB_SIZES = (64, 128, 256, 512)
 
 def get_s3_client():
-    return boto3.client(
-        's3',
-        aws_access_key_id = app.config['AWS_ACCESS_KEY_ID'],
-        aws_secret_access_key = app.config['AWS_SECRET_ACCESS_KEY']
-        )
+    return boto3.client('s3')
 
 def gen_signed_post(s3_client):
     return s3_client.generate_presigned_post(
