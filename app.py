@@ -14,6 +14,7 @@ from flask import (
 )
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import Resource, Api, abort, fields, marshal_with
+from flask_s3 import FlaskS3, create_all
 from playhouse.shortcuts import model_to_dict
 from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
@@ -43,6 +44,15 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 app.config['APP_URL'] = os.environ.get('APP_URL')
 app.config['S3_BUCKET'] = os.environ.get('S3_BUCKET')
+app.config['FLASKS3_BUCKET_NAME'] = os.environ.get('FLASKS3_BUCKET_NAME')
+app.config['FLASKS3_GZIP'] = True
+if app.config['DEBUG']:
+    app.config['FLASKS3_DEBUG'] = True
+
+FlaskS3(app)
+
+def upload_static():
+    create_all(app)
 
 @auth.verify_password
 def verify_password(username, password):
