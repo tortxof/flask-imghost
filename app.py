@@ -23,18 +23,19 @@ from colorthief import ColorThief
 
 import models
 
-models.database.connect()
-models.database.create_tables(
-    [
-        models.User,
-        models.Collection,
-        models.Image,
-        models.ImageCollection,
-        models.ApiKey
-    ],
-    safe=True,
-)
-models.database.close()
+def migrate():
+    models.database.connect()
+    models.database.create_tables(
+        [
+            models.User,
+            models.Collection,
+            models.Image,
+            models.ImageCollection,
+            models.ApiKey
+        ],
+        safe=True,
+    )
+    models.database.close()
 
 app = Flask(__name__)
 api = Api(app)
