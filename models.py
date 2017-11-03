@@ -11,7 +11,6 @@ database = PostgresqlDatabase(
     password = os.environ.get('PG_PASSWORD', ''),
     host = os.environ.get('PG_HOST', 'postgres'),
     port = int(os.environ.get('PG_PORT', 5432)),
-    register_hstore = False,
 )
 
 class BaseModel(Model):
