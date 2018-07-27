@@ -47,6 +47,7 @@ app.config['APP_URL'] = os.environ.get('APP_URL')
 app.config['S3_BUCKET'] = os.environ.get('S3_BUCKET')
 app.config['FLASKS3_BUCKET_NAME'] = os.environ.get('FLASKS3_BUCKET_NAME')
 app.config['FLASKS3_GZIP'] = True
+app.config['BUCKET_CDN'] = json.loads(os.environ.get('BUCKET_CDN'))
 if app.config['DEBUG']:
     app.config['FLASKS3_DEBUG'] = True
 
@@ -129,9 +130,9 @@ def gen_image_dict(image):
         'title': image.title,
         'description': image.description,
         's3_key': image.s3_key,
-        'url': gen_s3_url(image.s3_key, image.s3_bucket),
+        'url': gen_cdn_url(image.s3_key, image.s3_bucket),
         'thumbs': {
-            size: gen_s3_url(
+            size: gen_cdn_url(
                 gen_thumb_key(image.s3_key, size=size),
                 image.s3_bucket
             )
@@ -156,6 +157,11 @@ def gen_s3_url(key, bucket):
         bucket,
         quote_plus(key, safe='/')
     )
+
+def gen_cdn_url(key, bucket):
+    if bucket in app.config['BUCKET_CDN']:
+        return f"{app.config['BUCKET_CDN'][bucket]}/{quote_plus(key, safe='/')}"
+    return gen_s3_url(key, bucket)
 
 def create_thumbnails(image, num_colors=9):
     if (image.s3_key.split('.')[-1].lower() not in ('jpg', 'jpeg', 'png')):
@@ -208,7 +214,7 @@ def create_thumbnails(image, num_colors=9):
         )
         thumbs_object[size] = {
             'size': thumb_image_size,
-            'url': gen_s3_url(thumb_s3_key, image.s3_bucket)
+            'url': gen_cdn_url(thumb_s3_key, image.s3_bucket)
         }
     image.thumbs = json.dumps(thumbs_object)
     image.save()
@@ -540,7 +546,7 @@ image_resource_fields = {
     's3_key': fields.String,
     's3_bucket': fields.String,
     'url': fields.String(
-        attribute = lambda image: gen_s3_url(
+        attribute = lambda image: gen_cdn_url(
             image['s3_key'],
             image['s3_bucket']
         )
