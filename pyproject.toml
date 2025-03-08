@@ -14,4 +14,5 @@ dependencies = [
     "peewee>=3.17.9",
     "pillow>=11.1.0",
     "psycopg2-binary>=2.9.10",
+    "whitenoise>=6.9.0",
 ]

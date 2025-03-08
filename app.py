@@ -15,6 +15,7 @@ from flask_restful import Api, Resource, abort, fields, marshal_with
 from PIL import Image as PImage
 from playhouse.shortcuts import model_to_dict
 from werkzeug.security import check_password_hash, generate_password_hash
+from whitenoise import WhiteNoise
 
 import models
 
@@ -35,6 +36,7 @@ def migrate():
 
 
 app = Flask(__name__)
+app.wsgi_app = WhiteNoise(app.wsgi_app, root="static/")
 api = Api(app)
 auth = HTTPBasicAuth()
 
