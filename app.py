@@ -40,7 +40,6 @@ auth = HTTPBasicAuth()
 
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["DEBUG"] = json.loads(os.getenv("FLASK_DEBUG", "false"))
-app.config["APP_URL"] = os.getenv("APP_URL")
 app.config["S3_BUCKET"] = os.getenv("S3_BUCKET")
 app.config["BUCKET_CDN"] = json.loads(os.getenv("BUCKET_CDN"))
 
