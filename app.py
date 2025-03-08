@@ -145,7 +145,7 @@ def gen_thumb_key(key, size=THUMB_SIZES[0]):
 
 
 def gen_s3_url(key, bucket):
-    return "https://s3.amazonaws.com/{0}/{1}".format(bucket, quote_plus(key, safe="/"))
+    return f"https://s3.amazonaws.com/{bucket}/{quote_plus(key, safe='/')}"
 
 
 def gen_cdn_url(key, bucket):
