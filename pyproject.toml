@@ -1,0 +1,16 @@
+[project]
+name = "flask-imghost"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13.2"
+dependencies = [
+    "boto3>=1.37.9",
+    "colorthief>=0.2.1",
+    "flask>=3.1.0",
+    "flask-httpauth>=4.8.0",
+    "flask-restful>=0.3.10",
+    "peewee>=3.17.9",
+    "pillow>=11.1.0",
+    "psycopg2-binary>=2.9.10",
+]
