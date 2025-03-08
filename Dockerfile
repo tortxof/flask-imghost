@@ -1,22 +1,13 @@
-FROM python:3.5
-MAINTAINER Daniel Jones <tortxof@gmail.com>
+FROM public.ecr.aws/docker/library/python:3.13.2
 
-RUN groupadd -r docker && useradd -r -g docker docker
+LABEL maintainer="tortxof@gmail.com"
 
-RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.0.1/dumb-init_1.0.1_amd64.deb && \
-    dpkg -i dumb-init_1.0.1_amd64.deb && \
-    rm dumb-init_1.0.1_amd64.deb
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-COPY requirements.txt /app/
+ADD . /app
+
 WORKDIR /app
-RUN pip install -r requirements.txt
-COPY . /app/
 
-USER docker
+RUN uv sync --frozen
 
-ENV POSTGRES_PORT 5432
-
-EXPOSE 5000
-
-ENTRYPOINT ["dumb-init"]
-CMD ["python3", "app.py"]
+CMD ["uv", "run", "gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "app:app"]
